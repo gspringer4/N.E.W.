@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N.E.W. Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --navy:#1B2633; --navy-light:#1E352F; --fog:#F3F1EA;
+    --teal:#476D7F; --teal-dark:#345160; --slate:#5B5750; --slate-light:#A39E90;
+    --amber:#7A5A3A; --forest:#828C51; --line:#DBD6C8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--fog);color:var(--navy);font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}
+  .app{max-width:640px;margin:0 auto;min-height:100vh;background:var(--fog);}
+
+  .header{background:linear-gradient(180deg,var(--navy) 0%, var(--navy-light) 100%);padding:20px 18px 14px 18px;color:var(--fog);}
+  .header h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:0.5px;margin:0 0 2px 0;text-transform:uppercase;}
+  .header .sub{font-size:11px;color:var(--slate-light);font-family:'JetBrains Mono',monospace;margin-bottom:14px;}
+
+  .view-toggle{display:flex;gap:6px;}
+  .view-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid rgba(241,240,235,0.25);background:transparent;color:var(--slate-light);font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:0.4px;cursor:pointer;text-transform:uppercase;}
+  .view-btn.active{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:700;}
+
+  .trail-wrap{position:relative;height:80px;margin:14px -4px 0 -4px;}
+  .trail-svg{width:100%;height:100%;display:block;}
+  .stations{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:space-between;padding:0 6px;}
+  .station{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;padding-bottom:4px;background:none;border:none;}
+  .station .dot{width:10px;height:10px;border-radius:50%;background:var(--slate-light);border:2px solid var(--navy-light);margin-bottom:5px;transition:all .2s ease;}
+  .station.active .dot{background:var(--amber);box-shadow:0 0 0 4px rgba(122,90,58,0.3);}
+  .station label{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:0.3px;color:var(--slate-light);cursor:pointer;white-space:nowrap;}
+  .station.active label{color:var(--fog);font-weight:600;}
+
+  .body-pad{padding:16px 18px 40px 18px;}
+  .section-label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--slate);margin:0 0 8px 2px;}
+
+  .group-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .group-chip{font-family:'Barlow Condensed',sans-serif;font-size:15px;padding:6px 14px;border-radius:20px;border:1.5px solid var(--navy);background:transparent;color:var(--navy);cursor:pointer;letter-spacing:0.3px;}
+  .group-chip.active{background:var(--navy);color:var(--fog);}
+
+  .cat-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .cat-chip{font-family:'Inter',sans-serif;font-size:14px;font-weight:500;padding:9px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;}
+  .cat-chip.selected{border-color:var(--teal);background:var(--teal);color:#fff;}
+
+  .selected-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .tag-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:5px 8px 5px 10px;border-radius:14px;font-family:'Inter',sans-serif;}
+  .tag-pill button{background:none;border:none;color:inherit;opacity:0.85;cursor:pointer;font-size:14px;line-height:1;padding:0;}
+
+  textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;resize:vertical;min-height:52px;margin-bottom:12px;background:#fff;color:var(--navy);}
+  textarea:focus,.cat-chip:focus,.group-chip:focus,.station:focus,.log-btn:focus{outline:2px solid var(--teal);outline-offset:2px;}
+
+  .log-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--amber);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;}
+  .log-btn:disabled{background:var(--line);color:var(--slate-light);cursor:not-allowed;}
+  .log-btn.small{font-size:14px;padding:9px;}
+  .log-btn.btn-compact{width:auto;padding:9px 16px;flex:none;}
+  .log-btn:active:not(:disabled){transform:translateY(1px);}
+
+  .divider{height:1px;background:var(--line);margin:20px 0;}
+
+  .stats-row{display:flex;gap:10px;margin-bottom:16px;}
+  .stat-card{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;}
+  .stat-card .num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--teal-dark);}
+  .stat-card .lbl{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+
+  .hist-day{margin-bottom:12px;}
+  .hist-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:6px;text-transform:uppercase;}
+  .entry{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:6px;}
+  .entry .tagrow{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px;}
+  .entry .note{font-size:12.5px;color:var(--slate);margin-top:2px;}
+  .entry-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .del{background:none;border:none;color:var(--slate-light);cursor:pointer;font-size:16px;padding:0 2px;line-height:1;flex:none;}
+  .del:hover{color:#B24141;}
+
+  .empty{text-align:center;color:var(--slate-light);font-size:13px;padding:20px 0;}
+  .filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .filter-chip{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;padding:5px 10px;border-radius:14px;border:1px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;letter-spacing:0.3px;}
+  .filter-chip.active{background:var(--navy);color:var(--fog);border-color:var(--navy);}
+
+  .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .week-nav button{background:#fff;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;font-size:16px;color:var(--navy);cursor:pointer;}
+  .week-range{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;color:var(--navy);}
+  .mode-row{display:flex;gap:8px;margin-bottom:16px;}
+  .mode-chip{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;}
+  .mode-chip.active{background:var(--forest);color:var(--navy);border-color:var(--forest);font-weight:600;}
+
+  .day-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+  .day-card.today{border-color:var(--amber);border-width:1.5px;}
+  .day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .day-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--navy);}
+  .day-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate-light);}
+  .plan-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-top:1px solid var(--fog);}
+  .plan-item:first-of-type{border-top:none;}
+  .check{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;color:#fff;font-size:12px;margin-top:1px;}
+  .check.done{background:var(--teal);border-color:var(--teal);}
+  .plan-item .tagrow{flex:1;display:flex;flex-wrap:wrap;gap:5px;}
+  .plan-item.done .tag-pill{opacity:0.55;}
+  .add-day-btn{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--teal-dark);background:none;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;margin-top:6px;width:100%;}
+
+  .picker-panel{background:var(--fog);border:1.5px solid var(--teal);border-radius:12px;padding:12px;margin-top:8px;}
+  .picker-actions{display:flex;gap:8px;margin-top:8px;}
+  .picker-actions button{flex:1;}
+  .ghost-btn{padding:10px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--slate);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(27,38,51,0.6);display:flex;align-items:center;justify-content:center;z-index:30;padding:20px;}
+  .modal-card{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px;}
+  .modal-card .tagrow{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--fog);padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s ease;font-family:'Inter',sans-serif;z-index:10;}
+  .toast.show{opacity:1;}
+  .hint{font-size:12px;color:var(--slate-light);margin:-6px 0 14px 2px;}
+
+  .data-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;}
+  .data-card h3{font-family:'Barlow Condensed',sans-serif;font-size:16px;margin:0 0 4px 0;color:var(--navy);}
+  .data-card p{font-size:12.5px;color:var(--slate);margin:0 0 12px 0;line-height:1.4;}
+  .file-input-label{display:block;width:100%;text-align:center;padding:13px;border-radius:10px;border:1.5px dashed var(--teal);color:var(--teal-dark);font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:0.3px;text-transform:uppercase;cursor:pointer;background:#fbfbf9;}
+  input[type=file]{display:none;}
+  .text-input{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--navy);}
+  .inline-form{display:flex;gap:8px;margin-bottom:14px;}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+const DEFAULT_AREAS = {
+  Physical:{ color:'#476D7F', groups:{
+    Strength:['Upper Body','Lower Body','Core','Bodyweight','Climbing','Full Body','Functional'],
+    Cardio:['Run','Bike','Surf','Jumprope','Hike','Walk','Swim','Sports','Conditioning'],
+    Recovery:['Sleep','Stretching','Yoga','Foam Roll','Steam Room','Ice Bath','Hot Tub','Prehab']
+  }},
+  Nutrition:{ color:'#7A5A3A', groups:{
+    Meals:['Pasta','Rice','Potato','Chicken','Beef','Egg','Oatmeal','Granola','Veggies','Fruits','Grain','Protein'],
+    Fuel:['Nuts','Chips','Coffee','Granola Bars'],
+    Supplements:['Multivitamin',"Omega-3's",'Creatine','Aminos','Liquid IV']
+  }},
+  Adventure:{ color:'#828C51', groups:{
+    'Big Trips':['Europe','National Parks','Mexico','South America','Mountain Trip'],
+    Weekend:['Camping','Backpacking','Vegas','Visit Buddies','Beach Day'],
+    'Side Quests':['Surf','Hike','Beach','Coffee Shop','Bookstore','Park','Museum','Live Music','Farmers Market','Local Event']
+  }},
+  Mental:{ color:'#1E352F', groups:{
+    'Read/Listen':['Fiction','Nonfiction','Articles','Podcasts','Audiobooks'],
+    Write:['Journal','Poetry','Stories','Draw','Rankings','Habits'],
+    Meditate:[]
+  }},
+  Growth:{ color:'#1B2633', flat:['Learning','Skills','Creating'] }
+};
+const AREA_LABELS = { Nutrition: 'Food/Nutrition' };
+function areaLabel(a){ return AREA_LABELS[a] || a; }
+
+const AREA_KEYS = Object.keys(DEFAULT_AREAS);
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY_FULL = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
+const ENTRIES_KEY = 'life-tracker-entries';
+const TEMPLATE_KEY = 'weekly-template';
+const PLAN_PREFIX = 'weekly-plan:';
+const AREAS_KEY = 'new-tracker-areas-config';
+
+let state = {
+  entries: [],
+  areas: {},
+  view: 'log',
+  logBrowseArea:'Physical', logBrowseGroup:'Strength', logSelected:[],
+  filterArea:'All',
+  weekAnchor: mondayOf(new Date()),
+  template: emptyWeek(),
+  plans: {},
+  weekMode: 'plan',
+  openDayPicker: null,
+  dayBrowseArea:'Physical', dayBrowseGroup:'Strength', daySelected:[],
+  pendingEntry: null,
+  settingsArea:'Physical', settingsGroup:'Strength'
+};
+
+function emptyWeek(){ const w={}; DAYS.forEach(d=>w[d]=[]); return w; }
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+function tagKey(t){ return t.area+'|'+(t.group||'')+'|'+t.category; }
+function hasTag(list,t){ return list.some(x=>tagKey(x)===tagKey(t)); }
+function toISO(d){ return d.toISOString().slice(0,10); }
+function mondayOf(d){ const day=d.getDay(); const diff=(day===0?-6:1-day); const m=new Date(d); m.setDate(d.getDate()+diff); m.setHours(0,0,0,0); return toISO(m); }
+function addDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return toISO(d); }
+function todayISO(){ return toISO(new Date()); }
+function fmtShort(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function fmtDow(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase(); }
+function textColorFor(hex){
+  const c = hex.replace('#','');
+  const r=parseInt(c.substring(0,2),16), g=parseInt(c.substring(2,4),16), b=parseInt(c.substring(4,6),16);
+  const lum = (0.299*r + 0.587*g + 0.114*b)/255;
+  return lum > 0.5 ? '#1B2633' : '#ffffff';
+}
+
+/* ---------------- Storage (localStorage) ---------------- */
+function normalizeEntry(e){
+  if(e.tags) return e;
+  return {timestamp:e.timestamp,date:e.date,notes:e.notes||'',tags:[{area:e.area,group:e.group||null,category:e.category}]};
+}
+function normalizeDayList(list){
+  return (list||[]).map(item=>{
+    if(item.tags) return {tags:item.tags, done:item.done||false};
+    return {tags:[{area:item.area,group:item.group||null,category:item.category}], done:item.done||false};
+  });
+}
+function normalizeWeek(w){
+  const out = emptyWeek();
+  DAYS.forEach(d=>{ out[d] = normalizeDayList(w && w[d]); });
+  return out;
+}
+function loadAreas(){
+  try{
+    const raw = localStorage.getItem(AREAS_KEY);
+    state.areas = raw ? JSON.parse(raw) : deepClone(DEFAULT_AREAS);
+  }catch(e){ state.areas = deepClone(DEFAULT_AREAS); }
+}
+function saveAreas(){
+  try{ localStorage.setItem(AREAS_KEY, JSON.stringify(state.areas)); }
+  catch(e){ showToast('Could not save categories'); }
+}
+function loadEntries(){
+  try{
+    const raw = localStorage.getItem(ENTRIES_KEY);
+    state.entries = raw ? JSON.parse(raw).map(normalizeEntry) : [];
+  }catch(e){ state.entries = []; }
+}
+function saveEntries(){
+  try{ localStorage.setItem(ENTRIES_KEY, JSON.stringify(state.entries)); }
+  catch(e){ showToast('Could not save — storage might be full'); }
+}
+function loadTemplate(){
+  try{
+    const raw = localStorage.getItem(TEMPLATE_KEY);
+    state.template = normalizeWeek(raw ? JSON.parse(raw) : null);
+  }catch(e){ state.template = emptyWeek(); }
+}
+function saveTemplate(){
+  try{ localStorage.setItem(TEMPLATE_KEY, JSON.stringify(state.template)); }
+  catch(e){ showToast('Could not save template'); }
+}
+function loadPlan(weekAnchor){
+  if(state.plans[weekAnchor]) return state.plans[weekAnchor];
+  try{
+    const raw = localStorage.getItem(PLAN_PREFIX+weekAnchor);
+    if(raw){ state.plans[weekAnchor] = normalizeWeek(JSON.parse(raw)); return state.plans[weekAnchor]; }
+  }catch(e){}
+  const seeded = {};
+  DAYS.forEach(d=>{ seeded[d] = (state.template[d]||[]).map(item=>({tags:[...item.tags], done:false})); });
+  state.plans[weekAnchor] = seeded;
+  savePlan(weekAnchor);
+  return seeded;
+}
+function savePlan(weekAnchor){
+  try{ localStorage.setItem(PLAN_PREFIX+weekAnchor, JSON.stringify(state.plans[weekAnchor])); }
+  catch(e){ showToast('Could not save plan'); }
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast'); if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function escJs(s){ return String(s).replace(/'/g,"\\'"); }
+
+function trailSVG(){
+  return `<svg class="trail-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
+    <path d="M10,66 C60,64 60,46 100,42 C140,38 140,25 180,22 C220,19 220,12 290,8"
+      fill="none" stroke="#2C4A5F" stroke-width="2" stroke-dasharray="1,6" stroke-linecap="round"/>
+  </svg>`;
+}
+function tagPill(t, removable, onRemove){
+  const color = state.areas[t.area].color;
+  const textColor = textColorFor(color);
+  const label = (t.group?t.group+' · ':'') + t.category;
+  return `<span class="tag-pill" style="background:${color};color:${textColor}">${escapeHtml(label)}${removable?`<button onclick="${onRemove}">×</button>`:''}</span>`;
+}
+
+function renderPickerBody(browseArea, browseGroup, selectedList, fn){
+  const def = state.areas[browseArea];
+  const isGrouped = !!def.groups;
+  const cats = isGrouped ? (def.groups[browseGroup]||[]) : def.flat;
+  return `
+    <div class="group-row">
+      ${AREA_KEYS.map(a=>`<button class="group-chip ${a===browseArea?'active':''}" onclick="${fn}_area('${a}')">${areaLabel(a)}</button>`).join('')}
+    </div>
+    ${isGrouped?`<div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===browseGroup?'active':''}" style="border-color:var(--teal-dark)" onclick="${fn}_group('${escJs(g)}')">${g}</button>`).join('')}</div>`:''}
+    <div class="cat-grid">
+      ${cats.map(c=>{
+        const t={area:browseArea,group:isGrouped?browseGroup:null,category:c};
+        const sel = hasTag(selectedList,t);
+        return `<button class="cat-chip ${sel?'selected':''}" onclick="${fn}_toggle('${browseArea}','${isGrouped?escJs(browseGroup):''}','${escJs(c)}')">${c}</button>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="header">
+      <h1>N.E.W. Tracker</h1>
+      <div class="sub">LIFE TRACKER · ${todayISO()} · OFFLINE</div>
+      <div class="view-toggle">
+        <button class="view-btn ${state.view==='log'?'active':''}" onclick="setView('log')">Log</button>
+        <button class="view-btn ${state.view==='week'?'active':''}" onclick="setView('week')">Week</button>
+        <button class="view-btn ${state.view==='data'?'active':''}" onclick="setView('data')">Data</button>
+      </div>
+      ${state.view==='log' ? `
+        <div class="trail-wrap">
+          ${trailSVG()}
+          <div class="stations">
+            ${AREA_KEYS.map(a=>`<button class="station ${a===state.logBrowseArea?'active':''}" onclick="setLogArea('${a}')"><div class="dot"></div><label>${areaLabel(a)}</label></button>`).join('')}
+          </div>
+        </div>
+      `:''}
+    </div>
+    <div class="body-pad">
+      ${state.view==='log' ? renderLogView() : state.view==='week' ? renderWeekView() : renderDataView()}
+    </div>
+    ${state.pendingEntry ? renderPendingModal() : ''}
+    <div class="toast" id="toast"></div>
+  `;
+}
+
+function renderLogView(){
+  const def = state.areas[state.logBrowseArea];
+  const isGrouped = !!def.groups;
+  if(isGrouped && !def.groups[state.logBrowseGroup]) state.logBrowseGroup = Object.keys(def.groups)[0];
+  const todayCount = state.entries.filter(e=>e.date===todayISO()).length;
+  const totalCount = state.entries.length;
+  const streak = computeStreak();
+
+  return `
+    <div class="stats-row">
+      <div class="stat-card"><div class="num">${todayCount}</div><div class="lbl">Today</div></div>
+      <div class="stat-card"><div class="num">${streak}</div><div class="lbl">Day streak</div></div>
+      <div class="stat-card"><div class="num">${totalCount}</div><div class="lbl">All-time</div></div>
+    </div>
+    ${state.logSelected.length ? `
+      <div class="section-label">Selected tags</div>
+      <div class="selected-strip">${state.logSelected.map((t,i)=>tagPill(t,true,`removeLogTag(${i})`)).join('')}</div>
+    ` : `<div class="hint">Tap one or more tags below — mix areas freely.</div>`}
+    ${isGrouped?`
+      <div class="section-label">Group</div>
+      <div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===state.logBrowseGroup?'active':''}" onclick="setLogGroup('${escJs(g)}')">${g}</button>`).join('')}</div>
+    `:''}
+    <div class="section-label">${isGrouped?state.logBrowseGroup:areaLabel(state.logBrowseArea)}</div>
+    <div class="cat-grid">
+      ${(isGrouped?(def.groups[state.logBrowseGroup]||[]):def.flat).map(c=>{
+        const t={area:state.logBrowseArea,group:isGrouped?state.logBrowseGroup:null,category:c};
+        const sel = hasTag(state.logSelected,t);
+        return `<button class="cat-chip ${sel?'selected':''}" onclick="toggleLogTag('${state.logBrowseArea}','${isGrouped?escJs(state.logBrowseGroup):''}','${escJs(c)}')">${c}</button>`;
+      }).join('')}
+    </div>
+    <textarea id="notesInput" placeholder="Notes (optional) — details, how it felt, distance, reps…"></textarea>
+    <button class="log-btn" ${state.logSelected.length?'':'disabled'} onclick="handleLogButton()">Log entry</button>
+    <div class="divider"></div>
+    <div class="section-label">History</div>
+    <div class="filter-row">
+      <button class="filter-chip ${state.filterArea==='All'?'active':''}" onclick="setFilter('All')">All</button>
+      ${AREA_KEYS.map(a=>`<button class="filter-chip ${state.filterArea===a?'active':''}" onclick="setFilter('${a}')">${areaLabel(a)}</button>`).join('')}
+    </div>
+    ${renderHistory()}
+  `;
+}
+
+function computeStreak(){
+  const days = new Set(state.entries.map(e=>e.date));
+  let streak=0; let d=new Date();
+  while(true){ const iso=toISO(d); if(days.has(iso)){streak++; d.setDate(d.getDate()-1);} else break; }
+  return streak;
+}
+
+function renderHistory(){
+  const filtered = state.filterArea==='All' ? state.entries : state.entries.filter(e=>e.tags.some(t=>t.area===state.filterArea));
+  if(filtered.length===0) return `<div class="empty">No entries yet — log your first one above.</div>`;
+  const sorted=[...filtered].sort((a,b)=>b.timestamp-a.timestamp);
+  const byDate={};
+  sorted.forEach(e=>{ (byDate[e.date]=byDate[e.date]||[]).push(e); });
+  const dates = Object.keys(byDate).sort((a,b)=>new Date(b)-new Date(a)).slice(0,14);
+  return dates.map(date=>`
+    <div class="hist-day">
+      <div class="hist-date">${fmtDow(date)}</div>
+      ${byDate[date].map(e=>`
+        <div class="entry">
+          <div class="entry-top">
+            <div class="tagrow">${e.tags.map(t=>tagPill(t,false)).join('')}</div>
+            <button class="del" onclick="deleteEntry(${e.timestamp})" aria-label="Delete entry">×</button>
+          </div>
+          ${e.notes?`<div class="note">${escapeHtml(e.notes)}</div>`:''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function renderWeekView(){
+  const anchor = state.weekAnchor;
+  const rangeEnd = addDays(anchor,6);
+  const isCurrentWeek = anchor === mondayOf(new Date());
+  const plan = state.plans[anchor] || emptyWeek();
+  return `
+    <div class="week-nav">
+      <button onclick="shiftWeek(-1)" aria-label="Previous week">‹</button>
+      <div class="week-range">${fmtShort(anchor)} – ${fmtShort(rangeEnd)}${isCurrentWeek?' · This week':''}</div>
+      <button onclick="shiftWeek(1)" aria-label="Next week">›</button>
+    </div>
+    <div class="mode-row">
+      <button class="mode-chip ${state.weekMode==='plan'?'active':''}" onclick="setWeekMode('plan')">This week's plan</button>
+      <button class="mode-chip ${state.weekMode==='template'?'active':''}" onclick="setWeekMode('template')">Edit recurring template</button>
+    </div>
+    ${state.weekMode==='template' ? `<div class="hint">Changes here set the default for future weeks — they won't rewrite weeks you've already customized.</div>` : ''}
+    ${DAYS.map((d,i)=>renderDayCard(d,i,anchor,plan)).join('')}
+  `;
+}
+
+function renderDayCard(day, idx, anchor, plan){
+  const dateISO = addDays(anchor, idx);
+  const isToday = dateISO === todayISO();
+  const list = state.weekMode==='template' ? (state.template[day]||[]) : (plan[day]||[]);
+  const pickerOpen = state.openDayPicker === day;
+  const removeFn = state.weekMode==='template' ? 'removeTemplateTag' : 'removePlanTag';
+  const deleteFn = state.weekMode==='template' ? 'deleteTemplateItem' : 'deletePlanItem';
+
+  return `
+    <div class="day-card ${isToday && state.weekMode==='plan' ?'today':''}">
+      <div class="day-head">
+        <span class="day-name">${DAY_FULL[day]}</span>
+        <span class="day-date">${state.weekMode==='plan'?fmtShort(dateISO):''}</span>
+      </div>
+      ${list.length===0 ? `<div class="empty" style="padding:6px 0;">Nothing planned</div>` : list.map((item,i)=>`
+        <div class="plan-item ${item.done?'done':''}">
+          ${state.weekMode==='plan' ? `<div class="check ${item.done?'done':''}" onclick="toggleDone('${day}',${i})">${item.done?'✓':''}</div>` : ''}
+          <div class="tagrow">${item.tags.map((t,ti)=>tagPill(t,true,`${removeFn}('${day}',${i},${ti})`)).join('')}</div>
+          <button class="del" onclick="${deleteFn}('${day}',${i})" aria-label="Remove item">×</button>
+        </div>
+      `).join('')}
+      ${pickerOpen ? `
+        <div class="picker-panel">
+          ${renderPickerBody(state.dayBrowseArea, state.dayBrowseGroup, state.daySelected, 'dayPick')}
+          <div class="picker-actions">
+            <button class="ghost-btn" onclick="closeDayPicker()">Cancel</button>
+            <button class="log-btn small" ${state.daySelected.length?'':'disabled'} onclick="commitDayPicker('${day}')">Add ${state.daySelected.length||''}</button>
+          </div>
+        </div>
+      ` : `<button class="add-day-btn" onclick="openDayPicker('${day}')">+ Add plan item</button>`}
+    </div>
+  `;
+}
+
+function renderPendingModal(){
+  const p = state.pendingEntry;
+  return `
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <div class="section-label">Log this now?</div>
+        <div class="tagrow">${p.tags.map(t=>tagPill(t,false)).join('')}</div>
+        <textarea id="pendingNotes" placeholder="Notes (optional)"></textarea>
+        <div class="picker-actions">
+          <button class="ghost-btn" onclick="skipPendingEntry()">Skip</button>
+          <button class="log-btn small" onclick="savePendingEntry()">Save entry</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSettingsCard(){
+  const area = state.settingsArea;
+  const def = state.areas[area];
+  const isGrouped = !!def.groups;
+  if(isGrouped && (!state.settingsGroup || !def.groups[state.settingsGroup])) state.settingsGroup = Object.keys(def.groups)[0] || null;
+  const tags = isGrouped ? (state.settingsGroup ? (def.groups[state.settingsGroup]||[]) : []) : def.flat;
+
+  return `
+    <div class="data-card">
+      <h3>Manage categories &amp; tags</h3>
+      <p>Add or remove tags and groups for each area — changes apply everywhere immediately, no code edits needed.</p>
+      <div class="group-row">
+        ${AREA_KEYS.map(a=>`<button class="group-chip ${a===area?'active':''}" onclick="setSettingsArea('${a}')">${areaLabel(a)}</button>`).join('')}
+      </div>
+      ${isGrouped ? `
+        <div class="group-row">
+          ${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===state.settingsGroup?'active':''}" style="border-color:var(--teal-dark)" onclick="setSettingsGroup('${escJs(g)}')">${g}</button>`).join('')}
+        </div>
+      `:''}
+      <div class="selected-strip">
+        ${tags.length ? tags.map(t=>tagPill({area, group:isGrouped?state.settingsGroup:null, category:t}, true, `removeSettingsTag('${area}','${isGrouped?escJs(state.settingsGroup):''}','${escJs(t)}')`)).join('') : `<span class="hint">No tags yet — add one below.</span>`}
+      </div>
+      <div class="inline-form">
+        <input type="text" id="settingsTagInput" class="text-input" placeholder="New tag name">
+        <button class="log-btn small btn-compact" onclick="addSettingsTag()">Add tag</button>
+      </div>
+      ${isGrouped ? `
+        <div class="divider" style="margin:14px 0;"></div>
+        <div class="section-label">Groups in ${areaLabel(area)}</div>
+        <div class="selected-strip">
+          ${Object.keys(def.groups).map(g=>`<span class="tag-pill" style="background:var(--slate);color:#fff">${g}<button onclick="removeSettingsGroup('${area}','${escJs(g)}')">×</button></span>`).join('')}
+        </div>
+        <div class="inline-form" style="margin-bottom:0;">
+          <input type="text" id="settingsGroupInput" class="text-input" placeholder="New group name">
+          <button class="log-btn small btn-compact" onclick="addSettingsGroup()">Add group</button>
+        </div>
+      `:''}
+    </div>
+  `;
+}
+
+function renderDataView(){
+  return `
+    ${renderSettingsCard()}
+    <div class="data-card">
+      <h3>Export CSV</h3>
+      <p>All logged entries — date, time, tags, notes — as a spreadsheet-friendly file.</p>
+      <button class="log-btn small" onclick="exportCSV()">Export entries.csv</button>
+    </div>
+    <div class="data-card">
+      <h3>Full backup</h3>
+      <p>Everything: entries, your recurring template, every week's plan, and your custom categories/tags. Use this to move data between devices or browsers, or just to keep an offsite copy.</p>
+      <button class="log-btn small" onclick="exportBackup()">Export backup.json</button>
+    </div>
+    <div class="data-card">
+      <h3>Restore from backup</h3>
+      <p>Loads a backup.json file. Existing entries, template, plans, and categories will be overwritten with what's in the file.</p>
+      <label class="file-input-label">Choose backup.json
+        <input type="file" accept="application/json" onchange="importBackupFile(event)">
+      </label>
+    </div>
+    <div class="hint">This app stores everything in this browser only (localStorage). Nothing leaves your device unless you export it yourself.</div>
+  `;
+}
+
+/* ---------------- Actions ---------------- */
+function setView(v){ state.view=v; render(); }
+function setLogArea(a){ state.logBrowseArea=a; state.logBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
+function setLogGroup(g){ state.logBrowseGroup=g; render(); }
+function setFilter(a){ state.filterArea=a; render(); }
+
+function toggleLogTag(area,group,category){
+  const t = {area, group: group||null, category};
+  if(hasTag(state.logSelected,t)) state.logSelected = state.logSelected.filter(x=>tagKey(x)!==tagKey(t));
+  else state.logSelected.push(t);
+  render();
+}
+function removeLogTag(i){ state.logSelected.splice(i,1); render(); }
+
+function logEntry(dateOverride, tagsOverride, notesOverride){
+  const tags = tagsOverride || state.logSelected;
+  if(!tags.length) return;
+  const notes = notesOverride !== undefined ? notesOverride : document.getElementById('notesInput').value.trim();
+  const date = dateOverride || todayISO();
+  state.entries.push({ timestamp:Date.now(), date, tags:[...tags], notes });
+  if(!tagsOverride) state.logSelected = [];
+  saveEntries();
+}
+function deleteEntry(ts){
+  state.entries = state.entries.filter(e=>e.timestamp!==ts);
+  saveEntries(); render();
+}
+function handleLogButton(){
+  logEntry();
+  render();
+  showToast('Logged ✓');
+}
+
+function shiftWeek(dir){
+  state.weekAnchor = addDays(state.weekAnchor, dir*7);
+  loadPlan(state.weekAnchor);
+  render();
+}
+function setWeekMode(m){ state.weekMode=m; state.openDayPicker=null; render(); }
+
+function toggleDone(day, i){
+  const plan = state.plans[state.weekAnchor];
+  const item = plan[day][i];
+  const goingDone = !item.done;
+  item.done = goingDone;
+  savePlan(state.weekAnchor);
+  if(goingDone){
+    const dateISO = addDays(state.weekAnchor, DAYS.indexOf(day));
+    state.pendingEntry = { day, i, tags:[...item.tags], dateISO };
+  }
+  render();
+}
+function removePlanTag(day,itemIndex,tagIndex){
+  const plan = state.plans[state.weekAnchor];
+  const item = plan[day][itemIndex];
+  item.tags.splice(tagIndex,1);
+  if(item.tags.length===0) plan[day].splice(itemIndex,1);
+  savePlan(state.weekAnchor);
+  render();
+}
+function deletePlanItem(day,i){
+  const plan = state.plans[state.weekAnchor];
+  plan[day].splice(i,1);
+  savePlan(state.weekAnchor);
+  render();
+}
+function removeTemplateTag(day,itemIndex,tagIndex){
+  const item = state.template[day][itemIndex];
+  item.tags.splice(tagIndex,1);
+  if(item.tags.length===0) state.template[day].splice(itemIndex,1);
+  saveTemplate();
+  render();
+}
+function deleteTemplateItem(day,i){
+  state.template[day].splice(i,1);
+  saveTemplate();
+  render();
+}
+
+function openDayPicker(day){
+  state.openDayPicker = day;
+  state.dayBrowseArea='Physical'; state.dayBrowseGroup='Strength'; state.daySelected=[];
+  render();
+}
+function closeDayPicker(){ state.openDayPicker=null; render(); }
+function commitDayPicker(day){
+  const newItem = { tags:[...state.daySelected], done:false };
+  if(state.weekMode==='template'){
+    state.template[day] = [...(state.template[day]||[]), newItem];
+    saveTemplate();
+  } else {
+    const plan = state.plans[state.weekAnchor];
+    plan[day] = [...(plan[day]||[]), newItem];
+    savePlan(state.weekAnchor);
+  }
+  state.openDayPicker=null;
+  render();
+  showToast('Added ✓');
+}
+
+function dayPick_area(a){ state.dayBrowseArea=a; state.dayBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
+function dayPick_group(g){ state.dayBrowseGroup=g; render(); }
+function dayPick_toggle(area,group,category){
+  const t={area, group: group||null, category};
+  if(hasTag(state.daySelected,t)) state.daySelected = state.daySelected.filter(x=>tagKey(x)!==tagKey(t));
+  else state.daySelected.push(t);
+  render();
+}
+
+function skipPendingEntry(){ state.pendingEntry=null; render(); }
+function savePendingEntry(){
+  const p = state.pendingEntry;
+  const notes = document.getElementById('pendingNotes').value.trim();
+  logEntry(p.dateISO, p.tags, notes);
+  state.pendingEntry = null;
+  render();
+  showToast('Logged ✓');
+}
+
+/* ---------------- Settings (categories & tags) ---------------- */
+function setSettingsArea(a){
+  state.settingsArea = a;
+  const def = state.areas[a];
+  state.settingsGroup = def.groups ? Object.keys(def.groups)[0] : null;
+  render();
+}
+function setSettingsGroup(g){ state.settingsGroup = g; render(); }
+function addSettingsTag(){
+  const input = document.getElementById('settingsTagInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const area = state.settingsArea;
+  const def = state.areas[area];
+  if(def.groups){
+    if(!state.settingsGroup){ showToast('Add a group first'); return; }
+    if(def.groups[state.settingsGroup].includes(val)){ showToast('That tag already exists'); return; }
+    def.groups[state.settingsGroup].push(val);
+  } else {
+    if(def.flat.includes(val)){ showToast('That tag already exists'); return; }
+    def.flat.push(val);
+  }
+  saveAreas();
+  render();
+  showToast('Tag added ✓');
+}
+function removeSettingsTag(area, group, tagName){
+  const def = state.areas[area];
+  if(group){ def.groups[group] = def.groups[group].filter(c=>c!==tagName); }
+  else { def.flat = def.flat.filter(c=>c!==tagName); }
+  saveAreas();
+  render();
+}
+function addSettingsGroup(){
+  const input = document.getElementById('settingsGroupInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const area = state.settingsArea;
+  const def = state.areas[area];
+  if(!def.groups){ showToast("This area doesn't use groups"); return; }
+  if(def.groups[val]){ showToast('Group already exists'); return; }
+  def.groups[val] = [];
+  state.settingsGroup = val;
+  saveAreas();
+  render();
+  showToast('Group added ✓');
+}
+function removeSettingsGroup(area, group){
+  const def = state.areas[area];
+  if(!def.groups) return;
+  delete def.groups[group];
+  const remaining = Object.keys(def.groups);
+  if(state.settingsArea===area) state.settingsGroup = remaining[0] || null;
+  saveAreas();
+  render();
+  showToast('Group removed');
+}
+
+/* ---------------- Export / Import ---------------- */
+function csvEscape(field){
+  const s = String(field ?? '');
+  if(/[",\n\r]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function tagLabelFull(t){ return t.group ? `${areaLabel(t.area)} > ${t.group} > ${t.category}` : `${areaLabel(t.area)} > ${t.category}`; }
+function downloadBlob(content, mime, filename){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function exportCSV(){
+  if(state.entries.length===0){ showToast('No entries yet to export'); return; }
+  const rows = [['Date','Time','Tags','Notes']];
+  const sorted = [...state.entries].sort((a,b)=>a.timestamp-b.timestamp);
+  sorted.forEach(e=>{
+    const timeStr = new Date(e.timestamp).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    rows.push([e.date, timeStr, e.tags.map(tagLabelFull).join('; '), e.notes||'']);
+  });
+  const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
+  downloadBlob(csv, 'text/csv;charset=utf-8;', 'new-tracker-entries-'+todayISO()+'.csv');
+  showToast('CSV exported ✓');
+}
+function exportBackup(){
+  const backup = { exportedAt: new Date().toISOString(), entries: state.entries, template: state.template, areas: state.areas, plans: {} };
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith(PLAN_PREFIX)){
+      try{ backup.plans[k.slice(PLAN_PREFIX.length)] = JSON.parse(localStorage.getItem(k)); }catch(e){}
+    }
+  }
+  downloadBlob(JSON.stringify(backup,null,2), 'application/json', 'new-tracker-backup-'+todayISO()+'.json');
+  showToast('Backup exported ✓');
+}
+function importBackupFile(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(Array.isArray(data.entries)){
+        state.entries = data.entries.map(normalizeEntry);
+        saveEntries();
+      }
+      if(data.template){
+        state.template = normalizeWeek(data.template);
+        saveTemplate();
+      }
+      if(data.areas){
+        state.areas = data.areas;
+        saveAreas();
+      }
+      if(data.plans){
+        Object.keys(data.plans).forEach(weekAnchor=>{
+          const normalized = normalizeWeek(data.plans[weekAnchor]);
+          state.plans[weekAnchor] = normalized;
+          localStorage.setItem(PLAN_PREFIX+weekAnchor, JSON.stringify(normalized));
+        });
+      }
+      render();
+      showToast('Backup imported ✓');
+    }catch(err){
+      showToast('Could not read that file — is it a valid backup?');
+    }
+  };
+  reader.readAsText(file);
+}
+
+(function init(){
+  loadAreas();
+  loadEntries();
+  loadTemplate();
+  loadPlan(state.weekAnchor);
+  render();
+})();
+</script>
+</body>
+</html>
