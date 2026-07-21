@@ -1,10 +1,18 @@
-# Shore to Summit — Life Tracker
+# N.E.W. Tracker
 
-A personal tracker for the five areas from the Shore to Summit operating manual — Physical, Nutrition, Adventure, Mental, Growth — plus a weekly planner with follow-through tracking.
+A personal tracker across five life areas — Physical, Food/Nutrition, Adventure, Mental, Growth — plus a weekly planner with follow-through tracking.
 
 This is a **standalone** version: a single HTML file with no build step, no server, and no account required. It runs entirely in your browser and saves data using `localStorage`, so everything stays on the device/browser you're using it in.
 
-https://gspringer4.github.io/N.E.W./
+## What's in each area
+
+- **Physical** — Strength, Cardio, Recovery
+- **Food/Nutrition** — Meals, Fuel, Supplements
+- **Adventure** — Big Trips, Weekend, Side Quests
+- **Mental** — Read/Listen, Write, Meditate
+- **Growth** — Learning, Skills, Creating
+
+You're not locked into these. Open the **Data** tab → **Manage categories & tags** to add or remove tags and groups yourself, right from the app — no code changes needed.
 
 ## Running it
 
@@ -19,11 +27,12 @@ Just double-click `index.html`, or open it directly in any browser. No install n
 
 ## Data & backups
 
-- All data (log entries, your recurring weekly template, and each week's plan) is stored in your browser's `localStorage`, scoped to whatever URL you're opening this from.
+- All data — log entries, your recurring weekly template, each week's plan, and your custom categories/tags — is stored in your browser's `localStorage`, scoped to whatever URL you're opening this from.
 - That means: **the same browser + same URL** will always see the same data. A different browser, a different phone, or incognito/private mode will start empty.
-- Use the **Data** tab in the app to:
+- Use the **Data** tab to:
+  - Add/remove tags and groups under **Manage categories & tags**
   - Export your entries as a `.csv` (for spreadsheets)
-  - Export a full `.json` backup (entries + template + plans) — keep this somewhere safe (e.g. committed to this repo, or a cloud drive)
+  - Export a full `.json` backup (entries + template + plans + your custom categories) — keep this somewhere safe (e.g. committed to this repo, or a cloud drive)
   - Import a `.json` backup to restore or move data to a new browser/device
 
 ## Pushing this repo to GitHub
@@ -33,7 +42,7 @@ From this folder:
 ```bash
 git init
 git add .
-git commit -m "Initial commit — Shore to Summit life tracker"
+git commit -m "Initial commit — N.E.W. Tracker"
 git branch -M main
 git remote add origin https://github.com/<your-username>/<repo-name>.git
 git push -u origin main
@@ -43,7 +52,7 @@ git push -u origin main
 
 ## Updating later
 
-When you want new categories, tags, or UX changes, just replace `index.html` with the updated version and commit again:
+When you want new UX changes down the road, replace `index.html` with the updated version and commit again:
 
 ```bash
 git add index.html
@@ -51,4 +60,4 @@ git commit -m "Update tracker: <what changed>"
 git push
 ```
 
-Your data won't be affected by updating the file — it lives separately in the browser's storage, not in the code.
+Day-to-day category and tag changes don't need this at all — those live in the **Data → Manage categories & tags** screen inside the app itself. Your logged data isn't affected by updating the file either way — it lives separately in the browser's storage, not in the code.
