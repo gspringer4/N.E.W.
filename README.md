@@ -4,6 +4,8 @@ A personal tracker across five life areas — Physical, Food/Nutrition, Adventur
 
 This is a **standalone** version: a single HTML file with no build step, no server, and no account required. It runs entirely in your browser and saves data using `localStorage`, so everything stays on the device/browser you're using it in.
 
+https://gspringer4.github.io/N.E.W./
+
 ## What's in each area
 
 - **Physical** — Strength, Cardio, Recovery
