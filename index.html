@@ -8,9 +8,9 @@
   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
   :root{
-    --navy:#0E2A3D; --navy-light:#173B52; --fog:#F1F0EB;
-    --teal:#3E8E8A; --teal-dark:#2C6A67; --slate:#545B62; --slate-light:#9AA3AC;
-    --amber:#E2A33B; --forest:#3F6B4F; --line:#D8D5CB;
+    --navy:#1B2633; --navy-light:#1E352F; --fog:#F3F1EA;
+    --teal:#476D7F; --teal-dark:#345160; --slate:#5B5750; --slate-light:#A39E90;
+    --amber:#7A5A3A; --forest:#828C51; --line:#DBD6C8;
   }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--fog);color:var(--navy);font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}
@@ -22,14 +22,14 @@
 
   .view-toggle{display:flex;gap:6px;}
   .view-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid rgba(241,240,235,0.25);background:transparent;color:var(--slate-light);font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:0.4px;cursor:pointer;text-transform:uppercase;}
-  .view-btn.active{background:var(--amber);color:var(--navy);border-color:var(--amber);font-weight:700;}
+  .view-btn.active{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:700;}
 
   .trail-wrap{position:relative;height:80px;margin:14px -4px 0 -4px;}
   .trail-svg{width:100%;height:100%;display:block;}
   .stations{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:space-between;padding:0 6px;}
   .station{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;padding-bottom:4px;background:none;border:none;}
   .station .dot{width:10px;height:10px;border-radius:50%;background:var(--slate-light);border:2px solid var(--navy-light);margin-bottom:5px;transition:all .2s ease;}
-  .station.active .dot{background:var(--amber);box-shadow:0 0 0 4px rgba(226,163,59,0.25);}
+  .station.active .dot{background:var(--amber);box-shadow:0 0 0 4px rgba(122,90,58,0.3);}
   .station label{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:0.3px;color:var(--slate-light);cursor:pointer;white-space:nowrap;}
   .station.active label{color:var(--fog);font-weight:600;}
 
@@ -45,15 +45,16 @@
   .cat-chip.selected{border-color:var(--teal);background:var(--teal);color:#fff;}
 
   .selected-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-  .tag-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:5px 8px 5px 10px;border-radius:14px;color:#fff;font-family:'Inter',sans-serif;}
-  .tag-pill button{background:none;border:none;color:#fff;opacity:0.85;cursor:pointer;font-size:14px;line-height:1;padding:0;}
+  .tag-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:5px 8px 5px 10px;border-radius:14px;font-family:'Inter',sans-serif;}
+  .tag-pill button{background:none;border:none;color:inherit;opacity:0.85;cursor:pointer;font-size:14px;line-height:1;padding:0;}
 
   textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;resize:vertical;min-height:52px;margin-bottom:12px;background:#fff;color:var(--navy);}
   textarea:focus,.cat-chip:focus,.group-chip:focus,.station:focus,.log-btn:focus{outline:2px solid var(--teal);outline-offset:2px;}
 
-  .log-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;}
+  .log-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--amber);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;}
   .log-btn:disabled{background:var(--line);color:var(--slate-light);cursor:not-allowed;}
   .log-btn.small{font-size:14px;padding:9px;}
+  .log-btn.btn-compact{width:auto;padding:9px 16px;flex:none;}
   .log-btn:active:not(:disabled){transform:translateY(1px);}
 
   .divider{height:1px;background:var(--line);margin:20px 0;}
@@ -82,7 +83,7 @@
   .week-range{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;color:var(--navy);}
   .mode-row{display:flex;gap:8px;margin-bottom:16px;}
   .mode-chip{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;}
-  .mode-chip.active{background:var(--forest);color:#fff;border-color:var(--forest);}
+  .mode-chip.active{background:var(--forest);color:var(--navy);border-color:var(--forest);font-weight:600;}
 
   .day-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
   .day-card.today{border-color:var(--amber);border-width:1.5px;}
@@ -102,7 +103,7 @@
   .picker-actions button{flex:1;}
   .ghost-btn{padding:10px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--slate);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;}
 
-  .modal-backdrop{position:fixed;inset:0;background:rgba(14,42,61,0.55);display:flex;align-items:center;justify-content:center;z-index:30;padding:20px;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(27,38,51,0.6);display:flex;align-items:center;justify-content:center;z-index:30;padding:20px;}
   .modal-card{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px;}
   .modal-card .tagrow{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
 
@@ -115,32 +116,51 @@
   .data-card p{font-size:12.5px;color:var(--slate);margin:0 0 12px 0;line-height:1.4;}
   .file-input-label{display:block;width:100%;text-align:center;padding:13px;border-radius:10px;border:1.5px dashed var(--teal);color:var(--teal-dark);font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:0.3px;text-transform:uppercase;cursor:pointer;background:#fbfbf9;}
   input[type=file]{display:none;}
+  .text-input{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--navy);}
+  .inline-form{display:flex;gap:8px;margin-bottom:14px;}
 </style>
 </head>
 <body>
 <div class="app" id="app"></div>
 
 <script>
-const AREAS = {
-  Physical:{ color:'#3E8E8A', groups:{
-    Strength:['Upper Body','Lower Body','Full Body','Core','Climbing','Bodyweight','Functional'],
-    Cardio:['Walk','Run','Bike','Hike','Swim','Surf','Ruck','Sports','Conditioning'],
-    Recovery:['Rest','Stretch','Mobility','Walk','Yoga','Foam Roll','Sauna','Cold Plunge','Massage','Prehab']
+const DEFAULT_AREAS = {
+  Physical:{ color:'#476D7F', groups:{
+    Strength:['Upper Body','Lower Body','Core','Bodyweight','Climbing','Full Body','Functional'],
+    Cardio:['Run','Bike','Surf','Jumprope','Hike','Walk','Swim','Sports','Conditioning'],
+    Recovery:['Sleep','Stretching','Yoga','Foam Roll','Steam Room','Ice Bath','Hot Tub','Prehab']
   }},
-  Nutrition:{ color:'#E2A33B', flat:['Meals','Fuel/Snacks','Supplements'] },
-  Adventure:{ color:'#2C6A67', flat:['Big Trips','Weekend','Daily/Side Quests'] },
-  Mental:{ color:'#545B62', flat:['Reading','Writing','Meditation'] },
-  Growth:{ color:'#3F6B4F', flat:['Learning','Skills','Creating'] }
+  Nutrition:{ color:'#7A5A3A', groups:{
+    Meals:['Pasta','Rice','Potato','Chicken','Beef','Egg','Oatmeal','Granola','Veggies','Fruits','Grain','Protein'],
+    Fuel:['Nuts','Chips','Coffee','Granola Bars'],
+    Supplements:['Multivitamin',"Omega-3's",'Creatine','Aminos','Liquid IV']
+  }},
+  Adventure:{ color:'#828C51', groups:{
+    'Big Trips':['Europe','National Parks','Mexico','South America','Mountain Trip'],
+    Weekend:['Camping','Backpacking','Vegas','Visit Buddies','Beach Day'],
+    'Side Quests':['Surf','Hike','Beach','Coffee Shop','Bookstore','Park','Museum','Live Music','Farmers Market','Local Event']
+  }},
+  Mental:{ color:'#1E352F', groups:{
+    'Read/Listen':['Fiction','Nonfiction','Articles','Podcasts','Audiobooks'],
+    Write:['Journal','Poetry','Stories','Draw','Rankings','Habits'],
+    Meditate:[]
+  }},
+  Growth:{ color:'#1B2633', flat:['Learning','Skills','Creating'] }
 };
-const AREA_KEYS = Object.keys(AREAS);
+const AREA_LABELS = { Nutrition: 'Food/Nutrition' };
+function areaLabel(a){ return AREA_LABELS[a] || a; }
+
+const AREA_KEYS = Object.keys(DEFAULT_AREAS);
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const DAY_FULL = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
 const ENTRIES_KEY = 'life-tracker-entries';
 const TEMPLATE_KEY = 'weekly-template';
 const PLAN_PREFIX = 'weekly-plan:';
+const AREAS_KEY = 'new-tracker-areas-config';
 
 let state = {
   entries: [],
+  areas: {},
   view: 'log',
   logBrowseArea:'Physical', logBrowseGroup:'Strength', logSelected:[],
   filterArea:'All',
@@ -150,10 +170,12 @@ let state = {
   weekMode: 'plan',
   openDayPicker: null,
   dayBrowseArea:'Physical', dayBrowseGroup:'Strength', daySelected:[],
-  pendingEntry: null
+  pendingEntry: null,
+  settingsArea:'Physical', settingsGroup:'Strength'
 };
 
 function emptyWeek(){ const w={}; DAYS.forEach(d=>w[d]=[]); return w; }
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
 function tagKey(t){ return t.area+'|'+(t.group||'')+'|'+t.category; }
 function hasTag(list,t){ return list.some(x=>tagKey(x)===tagKey(t)); }
 function toISO(d){ return d.toISOString().slice(0,10); }
@@ -162,8 +184,14 @@ function addDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate(
 function todayISO(){ return toISO(new Date()); }
 function fmtShort(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 function fmtDow(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase(); }
+function textColorFor(hex){
+  const c = hex.replace('#','');
+  const r=parseInt(c.substring(0,2),16), g=parseInt(c.substring(2,4),16), b=parseInt(c.substring(4,6),16);
+  const lum = (0.299*r + 0.587*g + 0.114*b)/255;
+  return lum > 0.5 ? '#1B2633' : '#ffffff';
+}
 
-/* ---------------- Storage (localStorage — fully offline, no Claude required) ---------------- */
+/* ---------------- Storage (localStorage) ---------------- */
 function normalizeEntry(e){
   if(e.tags) return e;
   return {timestamp:e.timestamp,date:e.date,notes:e.notes||'',tags:[{area:e.area,group:e.group||null,category:e.category}]};
@@ -179,7 +207,16 @@ function normalizeWeek(w){
   DAYS.forEach(d=>{ out[d] = normalizeDayList(w && w[d]); });
   return out;
 }
-
+function loadAreas(){
+  try{
+    const raw = localStorage.getItem(AREAS_KEY);
+    state.areas = raw ? JSON.parse(raw) : deepClone(DEFAULT_AREAS);
+  }catch(e){ state.areas = deepClone(DEFAULT_AREAS); }
+}
+function saveAreas(){
+  try{ localStorage.setItem(AREAS_KEY, JSON.stringify(state.areas)); }
+  catch(e){ showToast('Could not save categories'); }
+}
 function loadEntries(){
   try{
     const raw = localStorage.getItem(ENTRIES_KEY);
@@ -224,6 +261,7 @@ function showToast(msg){
   window._toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
 }
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function escJs(s){ return String(s).replace(/'/g,"\\'"); }
 
 function trailSVG(){
   return `<svg class="trail-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
@@ -232,25 +270,26 @@ function trailSVG(){
   </svg>`;
 }
 function tagPill(t, removable, onRemove){
-  const color = AREAS[t.area].color;
+  const color = state.areas[t.area].color;
+  const textColor = textColorFor(color);
   const label = (t.group?t.group+' · ':'') + t.category;
-  return `<span class="tag-pill" style="background:${color}">${escapeHtml(label)}${removable?`<button onclick="${onRemove}">×</button>`:''}</span>`;
+  return `<span class="tag-pill" style="background:${color};color:${textColor}">${escapeHtml(label)}${removable?`<button onclick="${onRemove}">×</button>`:''}</span>`;
 }
 
 function renderPickerBody(browseArea, browseGroup, selectedList, fn){
-  const def = AREAS[browseArea];
+  const def = state.areas[browseArea];
   const isGrouped = !!def.groups;
-  const cats = isGrouped ? def.groups[browseGroup] : def.flat;
+  const cats = isGrouped ? (def.groups[browseGroup]||[]) : def.flat;
   return `
     <div class="group-row">
-      ${AREA_KEYS.map(a=>`<button class="group-chip ${a===browseArea?'active':''}" onclick="${fn}_area('${a}')">${a}</button>`).join('')}
+      ${AREA_KEYS.map(a=>`<button class="group-chip ${a===browseArea?'active':''}" onclick="${fn}_area('${a}')">${areaLabel(a)}</button>`).join('')}
     </div>
-    ${isGrouped?`<div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===browseGroup?'active':''}" style="border-color:var(--teal-dark)" onclick="${fn}_group('${g}')">${g}</button>`).join('')}</div>`:''}
+    ${isGrouped?`<div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===browseGroup?'active':''}" style="border-color:var(--teal-dark)" onclick="${fn}_group('${escJs(g)}')">${g}</button>`).join('')}</div>`:''}
     <div class="cat-grid">
       ${cats.map(c=>{
         const t={area:browseArea,group:isGrouped?browseGroup:null,category:c};
         const sel = hasTag(selectedList,t);
-        return `<button class="cat-chip ${sel?'selected':''}" onclick="${fn}_toggle('${browseArea}','${isGrouped?browseGroup:''}','${c.replace(/'/g,"\\'")}')">${c}</button>`;
+        return `<button class="cat-chip ${sel?'selected':''}" onclick="${fn}_toggle('${browseArea}','${isGrouped?escJs(browseGroup):''}','${escJs(c)}')">${c}</button>`;
       }).join('')}
     </div>
   `;
@@ -271,7 +310,7 @@ function render(){
         <div class="trail-wrap">
           ${trailSVG()}
           <div class="stations">
-            ${AREA_KEYS.map(a=>`<button class="station ${a===state.logBrowseArea?'active':''}" onclick="setLogArea('${a}')"><div class="dot"></div><label>${a}</label></button>`).join('')}
+            ${AREA_KEYS.map(a=>`<button class="station ${a===state.logBrowseArea?'active':''}" onclick="setLogArea('${a}')"><div class="dot"></div><label>${areaLabel(a)}</label></button>`).join('')}
           </div>
         </div>
       `:''}
@@ -285,7 +324,7 @@ function render(){
 }
 
 function renderLogView(){
-  const def = AREAS[state.logBrowseArea];
+  const def = state.areas[state.logBrowseArea];
   const isGrouped = !!def.groups;
   if(isGrouped && !def.groups[state.logBrowseGroup]) state.logBrowseGroup = Object.keys(def.groups)[0];
   const todayCount = state.entries.filter(e=>e.date===todayISO()).length;
@@ -304,14 +343,14 @@ function renderLogView(){
     ` : `<div class="hint">Tap one or more tags below — mix areas freely.</div>`}
     ${isGrouped?`
       <div class="section-label">Group</div>
-      <div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===state.logBrowseGroup?'active':''}" onclick="setLogGroup('${g}')">${g}</button>`).join('')}</div>
+      <div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===state.logBrowseGroup?'active':''}" onclick="setLogGroup('${escJs(g)}')">${g}</button>`).join('')}</div>
     `:''}
-    <div class="section-label">${isGrouped?state.logBrowseGroup:state.logBrowseArea}</div>
+    <div class="section-label">${isGrouped?state.logBrowseGroup:areaLabel(state.logBrowseArea)}</div>
     <div class="cat-grid">
-      ${(isGrouped?def.groups[state.logBrowseGroup]:def.flat).map(c=>{
+      ${(isGrouped?(def.groups[state.logBrowseGroup]||[]):def.flat).map(c=>{
         const t={area:state.logBrowseArea,group:isGrouped?state.logBrowseGroup:null,category:c};
         const sel = hasTag(state.logSelected,t);
-        return `<button class="cat-chip ${sel?'selected':''}" onclick="toggleLogTag('${state.logBrowseArea}','${isGrouped?state.logBrowseGroup:''}','${c.replace(/'/g,"\\'")}')">${c}</button>`;
+        return `<button class="cat-chip ${sel?'selected':''}" onclick="toggleLogTag('${state.logBrowseArea}','${isGrouped?escJs(state.logBrowseGroup):''}','${escJs(c)}')">${c}</button>`;
       }).join('')}
     </div>
     <textarea id="notesInput" placeholder="Notes (optional) — details, how it felt, distance, reps…"></textarea>
@@ -320,7 +359,7 @@ function renderLogView(){
     <div class="section-label">History</div>
     <div class="filter-row">
       <button class="filter-chip ${state.filterArea==='All'?'active':''}" onclick="setFilter('All')">All</button>
-      ${AREA_KEYS.map(a=>`<button class="filter-chip ${state.filterArea===a?'active':''}" onclick="setFilter('${a}')">${a}</button>`).join('')}
+      ${AREA_KEYS.map(a=>`<button class="filter-chip ${state.filterArea===a?'active':''}" onclick="setFilter('${a}')">${areaLabel(a)}</button>`).join('')}
     </div>
     ${renderHistory()}
   `;
@@ -427,8 +466,50 @@ function renderPendingModal(){
   `;
 }
 
+function renderSettingsCard(){
+  const area = state.settingsArea;
+  const def = state.areas[area];
+  const isGrouped = !!def.groups;
+  if(isGrouped && (!state.settingsGroup || !def.groups[state.settingsGroup])) state.settingsGroup = Object.keys(def.groups)[0] || null;
+  const tags = isGrouped ? (state.settingsGroup ? (def.groups[state.settingsGroup]||[]) : []) : def.flat;
+
+  return `
+    <div class="data-card">
+      <h3>Manage categories &amp; tags</h3>
+      <p>Add or remove tags and groups for each area — changes apply everywhere immediately, no code edits needed.</p>
+      <div class="group-row">
+        ${AREA_KEYS.map(a=>`<button class="group-chip ${a===area?'active':''}" onclick="setSettingsArea('${a}')">${areaLabel(a)}</button>`).join('')}
+      </div>
+      ${isGrouped ? `
+        <div class="group-row">
+          ${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===state.settingsGroup?'active':''}" style="border-color:var(--teal-dark)" onclick="setSettingsGroup('${escJs(g)}')">${g}</button>`).join('')}
+        </div>
+      `:''}
+      <div class="selected-strip">
+        ${tags.length ? tags.map(t=>tagPill({area, group:isGrouped?state.settingsGroup:null, category:t}, true, `removeSettingsTag('${area}','${isGrouped?escJs(state.settingsGroup):''}','${escJs(t)}')`)).join('') : `<span class="hint">No tags yet — add one below.</span>`}
+      </div>
+      <div class="inline-form">
+        <input type="text" id="settingsTagInput" class="text-input" placeholder="New tag name">
+        <button class="log-btn small btn-compact" onclick="addSettingsTag()">Add tag</button>
+      </div>
+      ${isGrouped ? `
+        <div class="divider" style="margin:14px 0;"></div>
+        <div class="section-label">Groups in ${areaLabel(area)}</div>
+        <div class="selected-strip">
+          ${Object.keys(def.groups).map(g=>`<span class="tag-pill" style="background:var(--slate);color:#fff">${g}<button onclick="removeSettingsGroup('${area}','${escJs(g)}')">×</button></span>`).join('')}
+        </div>
+        <div class="inline-form" style="margin-bottom:0;">
+          <input type="text" id="settingsGroupInput" class="text-input" placeholder="New group name">
+          <button class="log-btn small btn-compact" onclick="addSettingsGroup()">Add group</button>
+        </div>
+      `:''}
+    </div>
+  `;
+}
+
 function renderDataView(){
   return `
+    ${renderSettingsCard()}
     <div class="data-card">
       <h3>Export CSV</h3>
       <p>All logged entries — date, time, tags, notes — as a spreadsheet-friendly file.</p>
@@ -436,12 +517,12 @@ function renderDataView(){
     </div>
     <div class="data-card">
       <h3>Full backup</h3>
-      <p>Everything: entries, your recurring template, and every week's plan. Use this to move data between devices or browsers, or just to keep an offsite copy.</p>
+      <p>Everything: entries, your recurring template, every week's plan, and your custom categories/tags. Use this to move data between devices or browsers, or just to keep an offsite copy.</p>
       <button class="log-btn small" onclick="exportBackup()">Export backup.json</button>
     </div>
     <div class="data-card">
       <h3>Restore from backup</h3>
-      <p>Loads a backup.json file. Existing entries, template, and plans for the same weeks will be overwritten with what's in the file.</p>
+      <p>Loads a backup.json file. Existing entries, template, plans, and categories will be overwritten with what's in the file.</p>
       <label class="file-input-label">Choose backup.json
         <input type="file" accept="application/json" onchange="importBackupFile(event)">
       </label>
@@ -452,7 +533,7 @@ function renderDataView(){
 
 /* ---------------- Actions ---------------- */
 function setView(v){ state.view=v; render(); }
-function setLogArea(a){ state.logBrowseArea=a; state.logBrowseGroup = AREAS[a].groups?Object.keys(AREAS[a].groups)[0]:null; render(); }
+function setLogArea(a){ state.logBrowseArea=a; state.logBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
 function setLogGroup(g){ state.logBrowseGroup=g; render(); }
 function setFilter(a){ state.filterArea=a; render(); }
 
@@ -550,7 +631,7 @@ function commitDayPicker(day){
   showToast('Added ✓');
 }
 
-function dayPick_area(a){ state.dayBrowseArea=a; state.dayBrowseGroup = AREAS[a].groups?Object.keys(AREAS[a].groups)[0]:null; render(); }
+function dayPick_area(a){ state.dayBrowseArea=a; state.dayBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
 function dayPick_group(g){ state.dayBrowseGroup=g; render(); }
 function dayPick_toggle(area,group,category){
   const t={area, group: group||null, category};
@@ -569,13 +650,71 @@ function savePendingEntry(){
   showToast('Logged ✓');
 }
 
+/* ---------------- Settings (categories & tags) ---------------- */
+function setSettingsArea(a){
+  state.settingsArea = a;
+  const def = state.areas[a];
+  state.settingsGroup = def.groups ? Object.keys(def.groups)[0] : null;
+  render();
+}
+function setSettingsGroup(g){ state.settingsGroup = g; render(); }
+function addSettingsTag(){
+  const input = document.getElementById('settingsTagInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const area = state.settingsArea;
+  const def = state.areas[area];
+  if(def.groups){
+    if(!state.settingsGroup){ showToast('Add a group first'); return; }
+    if(def.groups[state.settingsGroup].includes(val)){ showToast('That tag already exists'); return; }
+    def.groups[state.settingsGroup].push(val);
+  } else {
+    if(def.flat.includes(val)){ showToast('That tag already exists'); return; }
+    def.flat.push(val);
+  }
+  saveAreas();
+  render();
+  showToast('Tag added ✓');
+}
+function removeSettingsTag(area, group, tagName){
+  const def = state.areas[area];
+  if(group){ def.groups[group] = def.groups[group].filter(c=>c!==tagName); }
+  else { def.flat = def.flat.filter(c=>c!==tagName); }
+  saveAreas();
+  render();
+}
+function addSettingsGroup(){
+  const input = document.getElementById('settingsGroupInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const area = state.settingsArea;
+  const def = state.areas[area];
+  if(!def.groups){ showToast("This area doesn't use groups"); return; }
+  if(def.groups[val]){ showToast('Group already exists'); return; }
+  def.groups[val] = [];
+  state.settingsGroup = val;
+  saveAreas();
+  render();
+  showToast('Group added ✓');
+}
+function removeSettingsGroup(area, group){
+  const def = state.areas[area];
+  if(!def.groups) return;
+  delete def.groups[group];
+  const remaining = Object.keys(def.groups);
+  if(state.settingsArea===area) state.settingsGroup = remaining[0] || null;
+  saveAreas();
+  render();
+  showToast('Group removed');
+}
+
 /* ---------------- Export / Import ---------------- */
 function csvEscape(field){
   const s = String(field ?? '');
   if(/[",\n\r]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
   return s;
 }
-function tagLabelFull(t){ return t.group ? `${t.area} > ${t.group} > ${t.category}` : `${t.area} > ${t.category}`; }
+function tagLabelFull(t){ return t.group ? `${areaLabel(t.area)} > ${t.group} > ${t.category}` : `${areaLabel(t.area)} > ${t.category}`; }
 function downloadBlob(content, mime, filename){
   const blob = new Blob([content], {type:mime});
   const url = URL.createObjectURL(blob);
@@ -593,18 +732,18 @@ function exportCSV(){
     rows.push([e.date, timeStr, e.tags.map(tagLabelFull).join('; '), e.notes||'']);
   });
   const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
-  downloadBlob(csv, 'text/csv;charset=utf-8;', 'shore-to-summit-entries-'+todayISO()+'.csv');
+  downloadBlob(csv, 'text/csv;charset=utf-8;', 'new-tracker-entries-'+todayISO()+'.csv');
   showToast('CSV exported ✓');
 }
 function exportBackup(){
-  const backup = { exportedAt: new Date().toISOString(), entries: state.entries, template: state.template, plans: {} };
+  const backup = { exportedAt: new Date().toISOString(), entries: state.entries, template: state.template, areas: state.areas, plans: {} };
   for(let i=0;i<localStorage.length;i++){
     const k = localStorage.key(i);
     if(k && k.startsWith(PLAN_PREFIX)){
       try{ backup.plans[k.slice(PLAN_PREFIX.length)] = JSON.parse(localStorage.getItem(k)); }catch(e){}
     }
   }
-  downloadBlob(JSON.stringify(backup,null,2), 'application/json', 'shore-to-summit-backup-'+todayISO()+'.json');
+  downloadBlob(JSON.stringify(backup,null,2), 'application/json', 'new-tracker-backup-'+todayISO()+'.json');
   showToast('Backup exported ✓');
 }
 function importBackupFile(evt){
@@ -621,6 +760,10 @@ function importBackupFile(evt){
       if(data.template){
         state.template = normalizeWeek(data.template);
         saveTemplate();
+      }
+      if(data.areas){
+        state.areas = data.areas;
+        saveAreas();
       }
       if(data.plans){
         Object.keys(data.plans).forEach(weekAnchor=>{
@@ -639,6 +782,7 @@ function importBackupFile(evt){
 }
 
 (function init(){
+  loadAreas();
   loadEntries();
   loadTemplate();
   loadPlan(state.weekAnchor);
