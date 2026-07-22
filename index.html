@@ -183,7 +183,12 @@ function emptyWeek(){ const w={}; DAYS.forEach(d=>w[d]=[]); return w; }
 function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
 function tagKey(t){ return t.area+'|'+(t.group||'')+'|'+t.category; }
 function hasTag(list,t){ return list.some(x=>tagKey(x)===tagKey(t)); }
-function toISO(d){ return d.toISOString().slice(0,10); }
+function toISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function mondayOf(d){ const day=d.getDay(); const diff=(day===0?-6:1-day); const m=new Date(d); m.setDate(d.getDate()+diff); m.setHours(0,0,0,0); return toISO(m); }
 function addDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return toISO(d); }
 function todayISO(){ return toISO(new Date()); }
@@ -408,6 +413,10 @@ function renderHistory(){
           ${expanded ? `
             <div class="tagrow" style="margin-top:6px;">${e.tags.map(t=>tagPill(t,false)).join('')}</div>
             ${e.notes?`<div class="note">${escapeHtml(e.notes)}</div>`:''}
+            <div class="inline-form" style="margin-top:8px;margin-bottom:0;align-items:center;">
+              <input type="date" id="dateEdit-${e.timestamp}" class="text-input" value="${e.date}">
+              <button class="log-btn small btn-compact" onclick="updateEntryDate(${e.timestamp})">Fix date</button>
+            </div>
           ` : ''}
         </div>`;
       }).join('')}
@@ -523,17 +532,17 @@ function renderSettingsCard(){
         <input type="text" id="settingsTagInput" class="text-input" placeholder="New tag name">
         <button class="log-btn small btn-compact" onclick="addSettingsTag()">Add tag</button>
       </div>
+      <div class="divider" style="margin:14px 0;"></div>
+      <div class="section-label">Groups in ${areaLabel(area)}</div>
       ${isGrouped ? `
-        <div class="divider" style="margin:14px 0;"></div>
-        <div class="section-label">Groups in ${areaLabel(area)}</div>
         <div class="selected-strip">
           ${Object.keys(def.groups).map(g=>`<span class="tag-pill" style="background:var(--slate);color:#fff">${g}<button onclick="removeSettingsGroup('${area}','${escJs(g)}')">×</button></span>`).join('')}
         </div>
-        <div class="inline-form" style="margin-bottom:0;">
-          <input type="text" id="settingsGroupInput" class="text-input" placeholder="New group name">
-          <button class="log-btn small btn-compact" onclick="addSettingsGroup()">Add group</button>
-        </div>
-      `:''}
+      ` : `<div class="hint">This area doesn't use groups yet — add one below and your existing tags will move under a "General" group.</div>`}
+      <div class="inline-form" style="margin-bottom:0;">
+        <input type="text" id="settingsGroupInput" class="text-input" placeholder="New group name">
+        <button class="log-btn small btn-compact" onclick="addSettingsGroup()">Add group</button>
+      </div>
     </div>
   `;
 }
@@ -603,6 +612,17 @@ function toggleEntryExpand(ts){
   if(state.expandedEntries.has(ts)) state.expandedEntries.delete(ts);
   else state.expandedEntries.add(ts);
   render();
+}
+function updateEntryDate(ts){
+  const input = document.getElementById('dateEdit-'+ts);
+  const newDate = input.value;
+  if(!newDate) return;
+  const entry = state.entries.find(e=>e.timestamp===ts);
+  if(!entry) return;
+  entry.date = newDate;
+  saveEntries();
+  render();
+  showToast('Date updated ✓');
 }
 
 function shiftWeek(dir){
@@ -737,7 +757,10 @@ function addSettingsGroup(){
   if(!val) return;
   const area = state.settingsArea;
   const def = state.areas[area];
-  if(!def.groups){ showToast("This area doesn't use groups"); return; }
+  if(!def.groups){
+    def.groups = { General: def.flat || [] };
+    delete def.flat;
+  }
   if(def.groups[val]){ showToast('Group already exists'); return; }
   def.groups[val] = [];
   state.settingsGroup = val;
