@@ -37,8 +37,11 @@
   .section-label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--slate);margin:0 0 8px 2px;}
 
   .group-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-  .group-chip{font-family:'Barlow Condensed',sans-serif;font-size:15px;padding:6px 14px;border-radius:20px;border:1.5px solid var(--navy);background:transparent;color:var(--navy);cursor:pointer;letter-spacing:0.3px;}
-  .group-chip.active{background:var(--navy);color:var(--fog);}
+  .group-chip{font-family:'Barlow Condensed',sans-serif;font-size:15px;padding:6px 14px;border-radius:20px;border:1.5px solid var(--teal-dark);background:transparent;color:var(--teal-dark);cursor:pointer;letter-spacing:0.3px;}
+  .group-chip.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+  .area-chip{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;padding:8px 16px;border-radius:8px;border:none;background:var(--navy);color:var(--fog);cursor:pointer;letter-spacing:0.5px;text-transform:uppercase;opacity:0.5;}
+  .area-chip.active{opacity:1;background:var(--amber);color:#fff;}
 
   .cat-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
   .cat-chip{font-family:'Inter',sans-serif;font-size:14px;font-weight:500;padding:9px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;}
@@ -176,7 +179,8 @@ let state = {
   pendingEntry: null,
   settingsArea:'Physical', settingsGroup:'Strength',
   expandedEntries: new Set(),
-  expandedPlan: new Set()
+  expandedPlan: new Set(),
+  editingPlanItem: null, editTagsSelected: [], editBrowseArea:'Physical', editBrowseGroup:'Strength'
 };
 
 function emptyWeek(){ const w={}; DAYS.forEach(d=>w[d]=[]); return w; }
@@ -298,9 +302,9 @@ function renderPickerBody(browseArea, browseGroup, selectedList, fn){
   const cats = isGrouped ? (def.groups[browseGroup]||[]) : def.flat;
   return `
     <div class="group-row">
-      ${AREA_KEYS.map(a=>`<button class="group-chip ${a===browseArea?'active':''}" onclick="${fn}_area('${a}')">${areaLabel(a)}</button>`).join('')}
+      ${AREA_KEYS.map(a=>`<button class="area-chip ${a===browseArea?'active':''}" onclick="${fn}_area('${a}')">${areaLabel(a)}</button>`).join('')}
     </div>
-    ${isGrouped?`<div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===browseGroup?'active':''}" style="border-color:var(--teal-dark)" onclick="${fn}_group('${escJs(g)}')">${g}</button>`).join('')}</div>`:''}
+    ${isGrouped?`<div class="group-row">${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===browseGroup?'active':''}" onclick="${fn}_group('${escJs(g)}')">${g}</button>`).join('')}</div>`:''}
     <div class="cat-grid">
       ${cats.map(c=>{
         const t={area:browseArea,group:isGrouped?browseGroup:null,category:c};
@@ -462,6 +466,7 @@ function renderDayCard(day, idx, anchor, plan){
         const key = day+'|'+i;
         const expanded = state.expandedPlan.has(key);
         const title = planAutoTitle(item.tags);
+        const isEditing = state.editingPlanItem && state.editingPlanItem.day===day && state.editingPlanItem.i===i;
         return `
         <div class="plan-item ${item.done?'done':''}">
           ${state.weekMode==='plan' ? `<div class="check ${item.done?'done':''}" onclick="toggleDone('${day}',${i})">${item.done?'✓':''}</div>` : ''}
@@ -469,7 +474,10 @@ function renderDayCard(day, idx, anchor, plan){
             <button class="entry-title" onclick="togglePlanExpand('${key}')">
               <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(title)}</span>
             </button>
-            ${expanded ? `<div class="tagrow" style="margin-top:6px;">${item.tags.map((t,ti)=>tagPill(t,true,`${removeFn}('${day}',${i},${ti})`)).join('')}</div>` : ''}
+            ${expanded ? (isEditing ? renderEditTagsPanel() : `
+              <div class="tagrow" style="margin-top:6px;">${item.tags.map((t,ti)=>tagPill(t,true,`${removeFn}('${day}',${i},${ti})`)).join('')}</div>
+              <button class="add-day-btn" style="margin-top:8px;" onclick="openEditPlanItem('${day}',${i})">Edit tags</button>
+            `) : ''}
           </div>
           <button class="del" onclick="${deleteFn}('${day}',${i})" aria-label="Remove item">×</button>
         </div>`;
@@ -483,6 +491,20 @@ function renderDayCard(day, idx, anchor, plan){
           </div>
         </div>
       ` : `<button class="add-day-btn" onclick="openDayPicker('${day}')">+ Add plan item</button>`}
+    </div>
+  `;
+}
+
+function renderEditTagsPanel(){
+  return `
+    <div class="picker-panel" style="margin-top:8px;">
+      <div class="section-label">Editing tags</div>
+      ${state.editTagsSelected.length ? `<div class="selected-strip">${state.editTagsSelected.map((t,idx)=>tagPill(t,true,`removeEditTag(${idx})`)).join('')}</div>` : `<div class="hint">No tags selected yet.</div>`}
+      ${renderPickerBody(state.editBrowseArea, state.editBrowseGroup, state.editTagsSelected, 'editPick')}
+      <div class="picker-actions">
+        <button class="ghost-btn" onclick="closeEditPlanItem()">Cancel</button>
+        <button class="log-btn small" ${state.editTagsSelected.length?'':'disabled'} onclick="commitEditPlanItem()">Save</button>
+      </div>
     </div>
   `;
 }
@@ -518,11 +540,11 @@ function renderSettingsCard(){
       <h3>Manage categories &amp; tags</h3>
       <p>Add or remove tags and groups for each area — changes apply everywhere immediately, no code edits needed.</p>
       <div class="group-row">
-        ${AREA_KEYS.map(a=>`<button class="group-chip ${a===area?'active':''}" onclick="setSettingsArea('${a}')">${areaLabel(a)}</button>`).join('')}
+        ${AREA_KEYS.map(a=>`<button class="area-chip ${a===area?'active':''}" onclick="setSettingsArea('${a}')">${areaLabel(a)}</button>`).join('')}
       </div>
       ${isGrouped ? `
         <div class="group-row">
-          ${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===state.settingsGroup?'active':''}" style="border-color:var(--teal-dark)" onclick="setSettingsGroup('${escJs(g)}')">${g}</button>`).join('')}
+          ${Object.keys(def.groups).map(g=>`<button class="group-chip ${g===state.settingsGroup?'active':''}" onclick="setSettingsGroup('${escJs(g)}')">${g}</button>`).join('')}
         </div>
       `:''}
       <div class="selected-strip">
@@ -628,10 +650,11 @@ function updateEntryDate(ts){
 function shiftWeek(dir){
   state.weekAnchor = addDays(state.weekAnchor, dir*7);
   state.expandedPlan = new Set();
+  state.editingPlanItem = null;
   loadPlan(state.weekAnchor);
   render();
 }
-function setWeekMode(m){ state.weekMode=m; state.openDayPicker=null; state.expandedPlan = new Set(); render(); }
+function setWeekMode(m){ state.weekMode=m; state.openDayPicker=null; state.expandedPlan = new Set(); state.editingPlanItem = null; render(); }
 function togglePlanExpand(key){
   if(state.expandedPlan.has(key)) state.expandedPlan.delete(key);
   else state.expandedPlan.add(key);
@@ -680,6 +703,7 @@ function deleteTemplateItem(day,i){
 function openDayPicker(day){
   state.openDayPicker = day;
   state.dayBrowseArea='Physical'; state.dayBrowseGroup='Strength'; state.daySelected=[];
+  state.editingPlanItem = null;
   render();
 }
 function closeDayPicker(){ state.openDayPicker=null; render(); }
@@ -696,6 +720,40 @@ function commitDayPicker(day){
   state.openDayPicker=null;
   render();
   showToast('Added ✓');
+}
+
+function openEditPlanItem(day, i){
+  const list = state.weekMode==='template' ? state.template[day] : state.plans[state.weekAnchor][day];
+  const item = list[i];
+  state.editingPlanItem = {day, i};
+  state.editTagsSelected = item.tags.map(t=>({...t}));
+  const first = item.tags[0];
+  const firstArea = first ? first.area : 'Physical';
+  const firstDef = state.areas[firstArea];
+  state.editBrowseArea = firstArea;
+  state.editBrowseGroup = first && first.group ? first.group : (firstDef.groups ? Object.keys(firstDef.groups)[0] : null);
+  state.openDayPicker = null;
+  render();
+}
+function closeEditPlanItem(){ state.editingPlanItem = null; render(); }
+function commitEditPlanItem(){
+  if(!state.editTagsSelected.length){ showToast('Add at least one tag'); return; }
+  const {day, i} = state.editingPlanItem;
+  const list = state.weekMode==='template' ? state.template[day] : state.plans[state.weekAnchor][day];
+  list[i].tags = [...state.editTagsSelected];
+  if(state.weekMode==='template') saveTemplate(); else savePlan(state.weekAnchor);
+  state.editingPlanItem = null;
+  render();
+  showToast('Tags updated ✓');
+}
+function removeEditTag(idx){ state.editTagsSelected.splice(idx,1); render(); }
+function editPick_area(a){ state.editBrowseArea=a; state.editBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
+function editPick_group(g){ state.editBrowseGroup=g; render(); }
+function editPick_toggle(area,group,category){
+  const t={area, group: group||null, category};
+  if(hasTag(state.editTagsSelected,t)) state.editTagsSelected = state.editTagsSelected.filter(x=>tagKey(x)!==tagKey(t));
+  else state.editTagsSelected.push(t);
+  render();
 }
 
 function dayPick_area(a){ state.dayBrowseArea=a; state.dayBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
