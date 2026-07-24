@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>N.E.W. Tracker</title>
-<link rel="apple-touch-icon" sizes="180x180" href="logo_small.png">
-<link rel="icon" type="image/png" href="logo.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -484,6 +482,7 @@ function renderDayCard(day, idx, anchor, plan){
           <button class="del" onclick="${deleteFn}('${day}',${i})" aria-label="Remove item">×</button>
         </div>`;
       }).join('')}
+      ${state.weekMode==='plan' ? state.entries.filter(e=>e.date===dateISO && !e.fromPlan).map(e=>renderLoggedActivity(e)).join('') : ''}
       ${pickerOpen ? `
         <div class="picker-panel">
           ${renderPickerBody(state.dayBrowseArea, state.dayBrowseGroup, state.daySelected, 'dayPick')}
@@ -507,6 +506,25 @@ function renderEditTagsPanel(){
         <button class="ghost-btn" onclick="closeEditPlanItem()">Cancel</button>
         <button class="log-btn small" ${state.editTagsSelected.length?'':'disabled'} onclick="commitEditPlanItem()">Save</button>
       </div>
+    </div>
+  `;
+}
+
+function renderLoggedActivity(e){
+  const expanded = state.expandedEntries.has(e.timestamp);
+  return `
+    <div class="plan-item done">
+      <div class="check done" style="cursor:default;" title="Logged activity">✓</div>
+      <div style="flex:1;min-width:0;">
+        <button class="entry-title" onclick="toggleEntryExpand(${e.timestamp})">
+          <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(e.title || categoriesJoin(e.tags))}</span>
+        </button>
+        ${expanded ? `
+          <div class="tagrow" style="margin-top:6px;">${e.tags.map(t=>tagPill(t,false)).join('')}</div>
+          ${e.notes?`<div class="note">${escapeHtml(e.notes)}</div>`:''}
+        ` : ''}
+      </div>
+      <button class="del" onclick="deleteEntry(${e.timestamp})" aria-label="Delete entry">×</button>
     </div>
   `;
 }
@@ -609,18 +627,21 @@ function toggleLogTag(area,group,category){
 }
 function removeLogTag(i){ state.logSelected.splice(i,1); render(); }
 
-function logEntry(dateOverride, tagsOverride, notesOverride, titleOverride){
+function logEntry(dateOverride, tagsOverride, notesOverride, titleOverride, fromPlan){
   const tags = tagsOverride || state.logSelected;
-  if(!tags.length) return;
+  if(!tags.length) return null;
   const notesEl = document.getElementById('notesInput');
   const titleEl = document.getElementById('titleInput');
   const notes = notesOverride !== undefined ? notesOverride : (notesEl?notesEl.value.trim():'');
   let title = titleOverride !== undefined ? titleOverride : (titleEl?titleEl.value.trim():'');
   if(!title) title = categoriesJoin(tags);
   const date = dateOverride || todayISO();
-  state.entries.push({ timestamp:Date.now(), date, tags:[...tags], notes, title });
+  const entry = { timestamp:Date.now(), date, tags:[...tags], notes, title };
+  if(fromPlan) entry.fromPlan = true;
+  state.entries.push(entry);
   if(!tagsOverride) state.logSelected = [];
   saveEntries();
+  return entry;
 }
 function deleteEntry(ts){
   state.entries = state.entries.filter(e=>e.timestamp!==ts);
@@ -772,7 +793,7 @@ function savePendingEntry(){
   const p = state.pendingEntry;
   const notes = document.getElementById('pendingNotes').value.trim();
   const title = document.getElementById('pendingTitle').value.trim();
-  logEntry(p.dateISO, p.tags, notes, title);
+  logEntry(p.dateISO, p.tags, notes, title, true);
   state.pendingEntry = null;
   render();
   showToast('Logged ✓');
