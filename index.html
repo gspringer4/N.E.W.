@@ -146,6 +146,11 @@
   .text-input-block{width:100%;margin-bottom:12px;display:block;}
   .inline-form{display:flex;gap:8px;margin-bottom:14px;}
 
+  .date-fix-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .date-fix-input{border:1px solid var(--line);border-radius:6px;padding:3px 6px;font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;color:var(--slate);width:auto;}
+  .date-fix-btn{border:none;background:none;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;color:var(--slate);cursor:pointer;padding:3px 4px;text-decoration:underline;text-decoration-color:var(--line);}
+  .date-fix-btn:hover{color:var(--teal-dark);}
+
   .goal-row{margin-bottom:12px;}
   .goal-row:last-child{margin-bottom:0;}
   .goal-label{font-size:13px;color:var(--text);margin-bottom:4px;display:flex;justify-content:space-between;gap:8px;}
@@ -244,6 +249,7 @@ let state = {
   expandedEntries: new Set(),
   expandedPlan: new Set(),
   editingPlanItem: null, editTagsSelected: [], editBrowseArea:'Physical', editBrowseGroup:'Strength',
+  editingEntryId: null,
   goals: [], goalArea:'Physical', goalGroup:null,
   pieDrilldown: null,
   menuOpen: false,
@@ -526,6 +532,7 @@ function renderHistory(){
       <div class="hist-date">${fmtDow(date)}</div>
       ${byDate[date].map(e=>{
         const expanded = state.expandedEntries.has(e.timestamp);
+        const editing = state.editingEntryId === e.timestamp;
         return `
         <div class="entry">
           <div class="entry-top">
@@ -534,14 +541,15 @@ function renderHistory(){
             </button>
             <button class="del" onclick="deleteEntry(${e.timestamp})" aria-label="Delete entry">×</button>
           </div>
-          ${expanded ? `
+          ${expanded ? (editing ? renderEditTagsPanel('closeEditEntryTags','commitEditEntryTags') : `
             <div class="tagrow" style="margin-top:6px;">${e.tags.map(t=>tagPill(t,false)).join('')}</div>
             ${e.notes?`<div class="note">${escapeHtml(e.notes)}</div>`:''}
-            <div class="inline-form" style="margin-top:8px;margin-bottom:0;align-items:center;">
-              <input type="date" id="dateEdit-${e.timestamp}" class="text-input" value="${e.date}">
-              <button class="log-btn small btn-compact" onclick="updateEntryDate(${e.timestamp})">Fix date</button>
+            <button class="add-day-btn" style="margin-top:8px;" onclick="openEditEntryTags(${e.timestamp})">Edit tags</button>
+            <div class="date-fix-row">
+              <input type="date" id="dateEdit-${e.timestamp}" class="date-fix-input" value="${e.date}">
+              <button class="date-fix-btn" onclick="updateEntryDate(${e.timestamp})">Fix date</button>
             </div>
-          ` : ''}
+          `) : ''}
         </div>`;
       }).join('')}
     </div>
@@ -860,7 +868,7 @@ function renderDayCard(day, idx, anchor, plan){
             <button class="entry-title" onclick="togglePlanExpand('${key}')">
               <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(title)}</span>
             </button>
-            ${expanded ? (isEditing ? renderEditTagsPanel() : `
+            ${expanded ? (isEditing ? renderEditTagsPanel('closeEditPlanItem','commitEditPlanItem') : `
               <div class="tagrow" style="margin-top:6px;">${item.tags.map((t,ti)=>tagPill(t,true,`${removeFn}('${day}',${i},${ti})`)).join('')}</div>
               <button class="add-day-btn" style="margin-top:8px;" onclick="openEditPlanItem('${day}',${i})">Edit tags</button>
             `) : ''}
@@ -882,15 +890,15 @@ function renderDayCard(day, idx, anchor, plan){
   `;
 }
 
-function renderEditTagsPanel(){
+function renderEditTagsPanel(closeFnName, commitFnName){
   return `
     <div class="picker-panel" style="margin-top:8px;">
       <div class="section-label">Editing tags</div>
       ${state.editTagsSelected.length ? `<div class="selected-strip">${state.editTagsSelected.map((t,idx)=>tagPill(t,true,`removeEditTag(${idx})`)).join('')}</div>` : `<div class="hint">No tags selected yet.</div>`}
       ${renderPickerBody(state.editBrowseArea, state.editBrowseGroup, state.editTagsSelected, 'editPick')}
       <div class="picker-actions">
-        <button class="ghost-btn" onclick="closeEditPlanItem()">Cancel</button>
-        <button class="log-btn small" ${state.editTagsSelected.length?'':'disabled'} onclick="commitEditPlanItem()">Save</button>
+        <button class="ghost-btn" onclick="${closeFnName}()">Cancel</button>
+        <button class="log-btn small" ${state.editTagsSelected.length?'':'disabled'} onclick="${commitFnName}()">Save</button>
       </div>
     </div>
   `;
@@ -898,6 +906,7 @@ function renderEditTagsPanel(){
 
 function renderLoggedActivity(e){
   const expanded = state.expandedEntries.has(e.timestamp);
+  const editing = state.editingEntryId === e.timestamp;
   return `
     <div class="plan-item done">
       <div class="check done" style="cursor:default;" title="Logged activity"><span class="check-mark">✓</span></div>
@@ -905,10 +914,11 @@ function renderLoggedActivity(e){
         <button class="entry-title" onclick="toggleEntryExpand(${e.timestamp})">
           <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(e.title || categoriesJoin(e.tags))}</span>
         </button>
-        ${expanded ? `
+        ${expanded ? (editing ? renderEditTagsPanel('closeEditEntryTags','commitEditEntryTags') : `
           <div class="tagrow" style="margin-top:6px;">${e.tags.map(t=>tagPill(t,false)).join('')}</div>
           ${e.notes?`<div class="note">${escapeHtml(e.notes)}</div>`:''}
-        ` : ''}
+          <button class="add-day-btn" style="margin-top:8px;" onclick="openEditEntryTags(${e.timestamp})">Edit tags</button>
+        `) : ''}
       </div>
       <button class="del" onclick="deleteEntry(${e.timestamp})" aria-label="Delete entry">×</button>
     </div>
@@ -1100,7 +1110,7 @@ function toggleTheme(){
   render();
 }
 
-function setView(v){ state.view=v; state.menuOpen=false; render(); }
+function setView(v){ state.view=v; state.menuOpen=false; state.editingEntryId=null; render(); }
 function toggleMenu(){ state.menuOpen = !state.menuOpen; render(); }
 function closeMenu(){ state.menuOpen = false; render(); }
 function setLogArea(a){ state.logBrowseArea=a; state.logBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
@@ -1141,6 +1151,28 @@ function handleLogButton(){
   render();
   showToast('Logged ✓');
 }
+function openEditEntryTags(ts){
+  const entry = state.entries.find(e=>e.timestamp===ts);
+  if(!entry) return;
+  state.editingEntryId = ts;
+  state.editTagsSelected = entry.tags.map(t=>({...t}));
+  const first = entry.tags[0];
+  const firstArea = first ? first.area : 'Physical';
+  const firstDef = state.areas[firstArea];
+  state.editBrowseArea = firstArea;
+  state.editBrowseGroup = first && first.group ? first.group : (firstDef.groups ? Object.keys(firstDef.groups)[0] : null);
+  render();
+}
+function closeEditEntryTags(){ state.editingEntryId = null; render(); }
+function commitEditEntryTags(){
+  if(!state.editTagsSelected.length){ showToast('Add at least one tag'); return; }
+  const entry = state.entries.find(e=>e.timestamp===state.editingEntryId);
+  if(entry){ entry.tags = [...state.editTagsSelected]; saveEntries(); }
+  state.editingEntryId = null;
+  render();
+  showToast('Tags updated ✓');
+}
+
 function toggleEntryExpand(ts){
   if(state.expandedEntries.has(ts)) state.expandedEntries.delete(ts);
   else state.expandedEntries.add(ts);
