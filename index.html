@@ -11,27 +11,36 @@
     --navy:#1B2633; --navy-light:#1E352F; --fog:#F3F1EA;
     --teal:#476D7F; --teal-dark:#345160; --slate:#5B5750; --slate-light:#A39E90;
     --amber:#7A5A3A; --forest:#828C51; --line:#DBD6C8;
+    --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.28 0 0 0 0 0.21 0 0 0 0 0.12 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--fog);color:var(--navy);font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background-color:var(--fog);background-image:var(--grain);color:var(--navy);font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}
   .app{max-width:640px;margin:0 auto;min-height:100vh;background:var(--fog);}
 
-  .header{background:linear-gradient(180deg,var(--navy) 0%, var(--navy-light) 100%);padding:20px 18px 14px 18px;color:var(--fog);}
-  .header h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:0.5px;margin:0 0 2px 0;text-transform:uppercase;}
-  .header .sub{font-size:11px;color:var(--slate-light);font-family:'JetBrains Mono',monospace;margin-bottom:14px;}
+  .header{position:relative;overflow:hidden;background:#EFE4CC;color:var(--navy);}
+  .header-bg{position:absolute;inset:0;z-index:0;}
+  .header-bg svg{width:100%;height:100%;display:block;}
+  .header-content{position:relative;z-index:1;padding:20px 18px 14px 18px;}
+  .header h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:0.5px;margin:0 0 2px 0;text-transform:uppercase;color:var(--navy);}
+  .header .sub{font-size:11px;color:var(--slate);font-family:'JetBrains Mono',monospace;margin-bottom:0;}
 
-  .view-toggle{display:flex;gap:6px;}
-  .view-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid rgba(241,240,235,0.25);background:transparent;color:var(--slate-light);font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:0.4px;cursor:pointer;text-transform:uppercase;}
-  .view-btn.active{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:700;}
+  .header-top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .menu-btn{width:38px;height:38px;flex:none;border:none;border-radius:8px;background:rgba(243,241,234,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;}
+  .menu-btn span{width:18px;height:2px;background:var(--navy);border-radius:1px;}
+  .menu-backdrop{position:fixed;inset:0;background:transparent;z-index:35;}
+  .menu-dropdown{position:fixed;top:72px;right:18px;background-color:#F3F1EA;background-image:var(--grain);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(27,38,51,0.28);z-index:40;overflow:hidden;min-width:150px;}
+  .menu-item{display:block;width:100%;text-align:left;padding:12px 16px;border:none;background:none;border-bottom:1px solid var(--line);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--navy);cursor:pointer;letter-spacing:0.3px;text-transform:uppercase;}
+  .menu-item:last-child{border-bottom:none;}
+  .menu-item.active{background:linear-gradient(180deg,#8C6A44 0%,var(--amber) 45%,#5F4429 100%);color:#fff;}
 
   .trail-wrap{position:relative;height:80px;margin:14px -4px 0 -4px;}
   .trail-svg{width:100%;height:100%;display:block;}
   .stations{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:space-between;padding:0 6px;}
   .station{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;padding-bottom:4px;background:none;border:none;}
-  .station .dot{width:10px;height:10px;border-radius:50%;background:var(--slate-light);border:2px solid var(--navy-light);margin-bottom:5px;transition:all .2s ease;}
+  .station .dot{width:10px;height:10px;background:var(--slate-light);border:2px solid var(--navy-light);margin-bottom:5px;transition:all .2s ease;border-radius:2px;transform:rotate(45deg);}
   .station.active .dot{background:var(--amber);box-shadow:0 0 0 4px rgba(122,90,58,0.3);}
-  .station label{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:0.3px;color:var(--slate-light);cursor:pointer;white-space:nowrap;}
-  .station.active label{color:var(--fog);font-weight:600;}
+  .station label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.2px;color:var(--navy);cursor:pointer;white-space:nowrap;background:rgba(243,241,234,0.85);padding:2px 7px;border-radius:8px;}
+  .station.active label{color:#fff;font-weight:700;background:var(--amber);}
 
   .body-pad{padding:16px 18px 40px 18px;}
   .section-label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--slate);margin:0 0 8px 2px;}
@@ -41,7 +50,7 @@
   .group-chip.active{background:var(--teal);color:#fff;border-color:var(--teal);}
 
   .area-chip{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;padding:8px 16px;border-radius:8px;border:none;background:var(--navy);color:var(--fog);cursor:pointer;letter-spacing:0.5px;text-transform:uppercase;opacity:0.5;}
-  .area-chip.active{opacity:1;background:var(--amber);color:#fff;}
+  .area-chip.active{opacity:1;background:linear-gradient(180deg,#8C6A44 0%,var(--amber) 45%,#5F4429 100%);color:#fff;}
 
   .cat-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
   .cat-chip{font-family:'Inter',sans-serif;font-size:14px;font-weight:500;padding:9px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;}
@@ -54,7 +63,7 @@
   textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;resize:vertical;min-height:52px;margin-bottom:12px;background:#fff;color:var(--navy);}
   textarea:focus,.cat-chip:focus,.group-chip:focus,.station:focus,.log-btn:focus{outline:2px solid var(--teal);outline-offset:2px;}
 
-  .log-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--amber);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;}
+  .log-btn{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(180deg,#8C6A44 0%,var(--amber) 45%,#5F4429 100%);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 1px 3px rgba(27,38,51,0.25);}
   .log-btn:disabled{background:var(--line);color:var(--slate-light);cursor:not-allowed;}
   .log-btn.small{font-size:14px;padding:9px;}
   .log-btn.btn-compact{width:auto;padding:9px 16px;flex:none;}
@@ -63,13 +72,13 @@
   .divider{height:1px;background:var(--line);margin:20px 0;}
 
   .stats-row{display:flex;gap:10px;margin-bottom:16px;}
-  .stat-card{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;}
+  .stat-card{flex:1;background-color:#fff;background-image:var(--grain);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;box-shadow:0 1px 3px rgba(27,38,51,0.06);}
   .stat-card .num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--teal-dark);}
   .stat-card .lbl{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
 
   .hist-day{margin-bottom:12px;}
   .hist-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:6px;text-transform:uppercase;}
-  .entry{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:6px;}
+  .entry{background-color:#fff;background-image:var(--grain);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:6px;box-shadow:0 1px 3px rgba(27,38,51,0.06);}
   .entry .tagrow{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px;}
   .entry .note{font-size:12.5px;color:var(--slate);margin-top:2px;}
   .entry-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
@@ -88,17 +97,18 @@
   .week-range{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;color:var(--navy);}
   .mode-row{display:flex;gap:8px;margin-bottom:16px;}
   .mode-chip{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;}
-  .mode-chip.active{background:var(--forest);color:var(--navy);border-color:var(--forest);font-weight:600;}
+  .mode-chip.active{background:linear-gradient(180deg,#9AA36A 0%,var(--forest) 55%,#5E6640 100%);color:#fff;border-color:var(--forest);font-weight:600;}
 
-  .day-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+  .day-card{background-color:#fff;background-image:var(--grain);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(27,38,51,0.06);}
   .day-card.today{border-color:var(--amber);border-width:1.5px;}
   .day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .day-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--navy);}
   .day-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate-light);}
   .plan-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-top:1px solid var(--fog);}
   .plan-item:first-of-type{border-top:none;}
-  .check{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;color:#fff;font-size:12px;margin-top:1px;}
+  .check{width:18px;height:18px;border:1.5px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;margin-top:4px;border-radius:2px;transform:rotate(45deg);}
   .check.done{background:var(--teal);border-color:var(--teal);}
+  .check-mark{display:inline-block;transform:rotate(-45deg);color:#fff;font-size:10px;font-weight:700;line-height:1;}
   .plan-item .tagrow{flex:1;display:flex;flex-wrap:wrap;gap:5px;}
   .plan-item.done .tag-pill{opacity:0.55;}
   .add-day-btn{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--teal-dark);background:none;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;margin-top:6px;width:100%;}
@@ -109,14 +119,14 @@
   .ghost-btn{padding:10px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--slate);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;}
 
   .modal-backdrop{position:fixed;inset:0;background:rgba(27,38,51,0.6);display:flex;align-items:center;justify-content:center;z-index:30;padding:20px;}
-  .modal-card{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px;}
+  .modal-card{background-color:#fff;background-image:var(--grain);border-radius:14px;padding:18px;width:100%;max-width:420px;box-shadow:0 4px 16px rgba(27,38,51,0.18);}
   .modal-card .tagrow{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
 
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--fog);padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s ease;font-family:'Inter',sans-serif;z-index:10;}
   .toast.show{opacity:1;}
   .hint{font-size:12px;color:var(--slate-light);margin:-6px 0 14px 2px;}
 
-  .data-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;}
+  .data-card{background-color:#fff;background-image:var(--grain);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(27,38,51,0.06);}
   .data-card h3{font-family:'Barlow Condensed',sans-serif;font-size:16px;margin:0 0 4px 0;color:var(--navy);}
   .data-card p{font-size:12.5px;color:var(--slate);margin:0 0 12px 0;line-height:1.4;}
   .file-input-label{display:block;width:100%;text-align:center;padding:13px;border-radius:10px;border:1.5px dashed var(--teal);color:var(--teal-dark);font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:0.3px;text-transform:uppercase;cursor:pointer;background:#fbfbf9;}
@@ -124,6 +134,33 @@
   .text-input{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--navy);}
   .text-input-block{width:100%;margin-bottom:12px;display:block;}
   .inline-form{display:flex;gap:8px;margin-bottom:14px;}
+
+  .goal-row{margin-bottom:12px;}
+  .goal-row:last-child{margin-bottom:0;}
+  .goal-label{font-size:13px;color:var(--navy);margin-bottom:4px;display:flex;justify-content:space-between;gap:8px;}
+  .goal-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);flex:none;}
+  .goal-bar{height:8px;background:var(--fog);border-radius:5px;overflow:hidden;border:1px solid var(--line);}
+  .goal-fill{height:100%;background:var(--teal);border-radius:5px 0 0 5px;transition:width .3s ease;}
+  .goal-fill.met{background:var(--forest);border-radius:5px;}
+  .goal-manage-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--fog);font-size:13px;color:var(--navy);}
+  .goal-manage-row:first-child{border-top:none;}
+
+  .badge-grid{display:flex;flex-direction:column;gap:16px;}
+  .badge-area-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;color:var(--navy);margin-bottom:6px;}
+  .badge-row{display:flex;gap:10px;align-items:flex-end;}
+  .badge{width:52px;flex:none;opacity:0.5;}
+  .badge.unlocked{opacity:1;}
+  .badge svg{display:block;width:100%;height:auto;}
+  .badge-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate);margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;}
+
+  .pie-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;}
+  .pie-wrap svg{flex:none;}
+  .pie-legend{flex:1;min-width:150px;}
+  .legend-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--navy);margin-bottom:7px;cursor:pointer;border-radius:6px;padding:3px 4px;margin-left:-4px;}
+  .legend-row.selected{background:var(--fog);font-weight:700;}
+  .legend-swatch{width:12px;height:12px;border-radius:3px;flex:none;}
+  .legend-label{flex:1;}
+  .legend-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);flex:none;}
 </style>
 </head>
 <body>
@@ -151,7 +188,12 @@ const DEFAULT_AREAS = {
     Write:['Journal','Poetry','Stories','Draw','Rankings','Habits'],
     Meditate:[]
   }},
-  Growth:{ color:'#1B2633', flat:['Learning','Skills','Creating'] }
+  Growth:{ color:'#1B2633', flat:['Learning','Skills','Creating'] },
+  Social:{ color:'#A85C4B', groups:{
+    Friends:['Hang Out','Call','Video Chat','Host','Visit'],
+    Family:['Call','Visit','Family Dinner','Holiday','Check In'],
+    Community:['Volunteer','Party/Event','Club/Group','Networking','Local Event']
+  }}
 };
 const AREA_LABELS = { Nutrition: 'Food/Nutrition' };
 function areaLabel(a){ return AREA_LABELS[a] || a; }
@@ -163,11 +205,17 @@ const ENTRIES_KEY = 'life-tracker-entries';
 const TEMPLATE_KEY = 'weekly-template';
 const PLAN_PREFIX = 'weekly-plan:';
 const AREAS_KEY = 'new-tracker-areas-config';
+const GOALS_KEY = 'new-tracker-goals';
+const BADGE_TIERS = [
+  { name:'Bronze', threshold:10, ring:'#B08D57' },
+  { name:'Silver', threshold:25, ring:'#9AA3AC' },
+  { name:'Gold', threshold:50, ring:'#C9A227' }
+];
 
 let state = {
   entries: [],
   areas: {},
-  view: 'log',
+  view: 'home',
   logBrowseArea:'Physical', logBrowseGroup:'Strength', logSelected:[],
   filterArea:'All',
   weekAnchor: mondayOf(new Date()),
@@ -180,7 +228,10 @@ let state = {
   settingsArea:'Physical', settingsGroup:'Strength',
   expandedEntries: new Set(),
   expandedPlan: new Set(),
-  editingPlanItem: null, editTagsSelected: [], editBrowseArea:'Physical', editBrowseGroup:'Strength'
+  editingPlanItem: null, editTagsSelected: [], editBrowseArea:'Physical', editBrowseGroup:'Strength',
+  goals: [], goalArea:'Physical', goalGroup:null,
+  pieDrilldown: null,
+  menuOpen: false
 };
 
 function emptyWeek(){ const w={}; DAYS.forEach(d=>w[d]=[]); return w; }
@@ -232,6 +283,9 @@ function loadAreas(){
     const raw = localStorage.getItem(AREAS_KEY);
     state.areas = raw ? JSON.parse(raw) : deepClone(DEFAULT_AREAS);
   }catch(e){ state.areas = deepClone(DEFAULT_AREAS); }
+  AREA_KEYS.forEach(a=>{
+    if(!state.areas[a]) state.areas[a] = deepClone(DEFAULT_AREAS[a]);
+  });
 }
 function saveAreas(){
   try{ localStorage.setItem(AREAS_KEY, JSON.stringify(state.areas)); }
@@ -274,6 +328,23 @@ function savePlan(weekAnchor){
   catch(e){ showToast('Could not save plan'); }
 }
 
+function loadGoals(){
+  try{
+    const raw = localStorage.getItem(GOALS_KEY);
+    state.goals = raw ? JSON.parse(raw) : [];
+  }catch(e){ state.goals = []; }
+}
+function saveGoals(){
+  try{ localStorage.setItem(GOALS_KEY, JSON.stringify(state.goals)); }
+  catch(e){ showToast('Could not save goals'); }
+}
+function goalProgress(goal, weekAnchor){
+  const start = weekAnchor, end = addDays(weekAnchor,6);
+  return state.entries.filter(e=> e.date>=start && e.date<=end && e.tags.some(t=>t.area===goal.area && (!goal.group || t.group===goal.group))).length;
+}
+function areaEntryCount(area){
+  return state.entries.filter(e=>e.tags.some(t=>t.area===area)).length;
+}
 function showToast(msg){
   const t=document.getElementById('toast'); if(!t) return;
   t.textContent=msg; t.classList.add('show');
@@ -283,11 +354,22 @@ function showToast(msg){
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 function escJs(s){ return String(s).replace(/'/g,"\\'"); }
 
-function trailSVG(){
-  return `<svg class="trail-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
-    <path d="M10,66 C60,64 60,46 100,42 C140,38 140,25 180,22 C220,19 220,12 290,8"
-      fill="none" stroke="#2C4A5F" stroke-width="2" stroke-dasharray="1,6" stroke-linecap="round"/>
+function topoSVG(){
+  return `<svg viewBox="0 0 400 200" preserveAspectRatio="none">
+    <rect width="400" height="200" fill="#F1E6CC"/>
+    <path d="M0,25 C40,10 70,35 110,22 C150,8 190,30 230,18 C270,6 310,28 350,15 C380,6 400,20 400,20 L400,200 L0,200 Z" fill="#EAD9B8"/>
+    <path d="M0,55 C45,70 80,40 120,58 C160,75 200,45 240,62 C280,78 320,48 360,64 C385,72 400,58 400,58 L400,200 L0,200 Z" fill="#E0CBA0"/>
+    <path d="M0,85 C50,68 90,100 130,82 C170,64 210,96 250,80 C290,64 330,94 370,78 C388,70 400,80 400,80 L400,200 L0,200 Z" fill="#D5BC88"/>
+    <path d="M0,118 C55,135 95,102 140,120 C185,138 225,105 270,122 C310,138 345,110 380,124 C392,130 400,122 400,122 L400,200 L0,200 Z" fill="#C8AC72"/>
+    <path d="M0,148 C60,130 100,160 145,142 C190,124 230,155 275,138 C315,122 350,150 385,135 C395,130 400,136 400,136 L400,200 L0,200 Z" fill="#B99A5E"/>
+    <path d="M0,178 C65,195 105,165 150,182 C195,198 235,168 280,184 C320,198 355,172 390,186 C398,190 400,185 400,185 L400,200 L0,200 Z" fill="#A6884E"/>
+    <path d="M0,90 C50,73 90,105 130,87 C170,69 210,101 250,85 C290,69 330,99 370,83 C388,75 400,85 400,85" fill="none" stroke="#F6EFDC" stroke-width="1.3" stroke-dasharray="3,4" opacity="0.6"/>
+    <path d="M0,152 C60,134 100,164 145,146 C190,128 230,159 275,142 C315,126 350,154 385,139 C395,134 400,140 400,140" fill="none" stroke="#F6EFDC" stroke-width="1.3" stroke-dasharray="3,4" opacity="0.6"/>
   </svg>`;
+}
+
+function trailSVG(){
+  return `<svg class="trail-svg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg>`;
 }
 function tagPill(t, removable, onRemove){
   const color = state.areas[t.area].color;
@@ -319,24 +401,38 @@ function render(){
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="header">
-      <h1>N.E.W. Tracker</h1>
-      <div class="sub">LIFE TRACKER · ${todayISO()} · OFFLINE</div>
-      <div class="view-toggle">
-        <button class="view-btn ${state.view==='log'?'active':''}" onclick="setView('log')">Log</button>
-        <button class="view-btn ${state.view==='week'?'active':''}" onclick="setView('week')">Week</button>
-        <button class="view-btn ${state.view==='data'?'active':''}" onclick="setView('data')">Data</button>
-      </div>
-      ${state.view==='log' ? `
-        <div class="trail-wrap">
-          ${trailSVG()}
-          <div class="stations">
-            ${AREA_KEYS.map(a=>`<button class="station ${a===state.logBrowseArea?'active':''}" onclick="setLogArea('${a}')"><div class="dot"></div><label>${areaLabel(a)}</label></button>`).join('')}
+      <div class="header-bg">${topoSVG()}</div>
+      <div class="header-content">
+        <div class="header-top-row">
+          <div>
+            <h1 onclick="setView('home')" style="cursor:pointer;">N.E.W. Tracker</h1>
+            <div class="sub">LIFE TRACKER · ${todayISO()} · OFFLINE</div>
           </div>
+          <button class="menu-btn" onclick="toggleMenu()" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
         </div>
-      `:''}
+        ${state.view==='log' ? `
+          <div class="trail-wrap">
+            ${trailSVG()}
+            <div class="stations">
+              ${AREA_KEYS.map(a=>`<button class="station ${a===state.logBrowseArea?'active':''}" onclick="setLogArea('${a}')"><div class="dot"></div><label>${areaLabel(a)}</label></button>`).join('')}
+            </div>
+          </div>
+        `:''}
+      </div>
     </div>
+    ${state.menuOpen ? `
+      <div class="menu-backdrop" onclick="closeMenu()"></div>
+      <div class="menu-dropdown">
+        <button class="menu-item ${state.view==='home'?'active':''}" onclick="setView('home')">Home</button>
+        <button class="menu-item ${state.view==='log'?'active':''}" onclick="setView('log')">Log</button>
+        <button class="menu-item ${state.view==='week'?'active':''}" onclick="setView('week')">Week</button>
+        <button class="menu-item ${state.view==='data'?'active':''}" onclick="setView('data')">Data</button>
+      </div>
+    `:''}
     <div class="body-pad">
-      ${state.view==='log' ? renderLogView() : state.view==='week' ? renderWeekView() : renderDataView()}
+      ${state.view==='home' ? renderHomeView() : state.view==='log' ? renderLogView() : state.view==='week' ? renderWeekView() : renderDataView()}
     </div>
     ${state.pendingEntry ? renderPendingModal() : ''}
     <div class="toast" id="toast"></div>
@@ -444,7 +540,170 @@ function renderWeekView(){
       <button class="mode-chip ${state.weekMode==='template'?'active':''}" onclick="setWeekMode('template')">Edit recurring template</button>
     </div>
     ${state.weekMode==='template' ? `<div class="hint">Changes here set the default for future weeks — they won't rewrite weeks you've already customized.</div>` : ''}
+    ${state.weekMode==='plan' ? renderGoalsProgressCard(state.weekAnchor, "Goals this week") : ''}
     ${DAYS.map((d,i)=>renderDayCard(d,i,anchor,plan)).join('')}
+  `;
+}
+
+function renderGoalsProgressCard(weekAnchor, title){
+  if(state.goals.length===0) return '';
+  return `
+    <div class="data-card">
+      <h3>${title}</h3>
+      ${state.goals.map(g=>{
+        const count = goalProgress(g, weekAnchor);
+        const pct = Math.min(100, Math.round((count/g.target)*100));
+        const label = g.group ? `${g.group} · ${areaLabel(g.area)}` : areaLabel(g.area);
+        const met = count>=g.target;
+        return `
+          <div class="goal-row">
+            <div class="goal-label"><span>${escapeHtml(label)}</span><span class="goal-count">${count}/${g.target}</span></div>
+            <div class="goal-bar"><div class="goal-fill ${met?'met':''}" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function shadeColor(hex, percent){
+  const c = hex.replace('#','');
+  const r0=parseInt(c.substring(0,2),16), g0=parseInt(c.substring(2,4),16), b0=parseInt(c.substring(4,6),16);
+  const mix = (v)=> percent>=0 ? Math.round(v + (255-v)*(percent/100)) : Math.round(v + v*(percent/100));
+  const clamp = (v)=> Math.min(255,Math.max(0,v));
+  const r=clamp(mix(r0)), g=clamp(mix(g0)), b=clamp(mix(b0));
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+function computeAreaCounts(){
+  const counts = {};
+  AREA_KEYS.forEach(a=>counts[a]=0);
+  state.entries.forEach(e=>{
+    const seen = new Set();
+    e.tags.forEach(t=>{ if(!seen.has(t.area)){ seen.add(t.area); counts[t.area]++; } });
+  });
+  return counts;
+}
+
+function computeAreaBreakdown(area){
+  const def = state.areas[area];
+  const isGrouped = !!def.groups;
+  const counts = {};
+  if(isGrouped){ Object.keys(def.groups).forEach(g=>counts[g]=0); }
+  else { def.flat.forEach(c=>counts[c]=0); }
+  state.entries.forEach(e=>{
+    const seen = new Set();
+    e.tags.forEach(t=>{
+      if(t.area!==area) return;
+      const key = isGrouped ? (t.group || '(Other)') : t.category;
+      if(!seen.has(key)){ seen.add(key); counts[key] = (counts[key]||0)+1; }
+    });
+  });
+  return counts;
+}
+
+function renderGenericPie(counts, colorFn, size, radius){
+  const total = Object.values(counts).reduce((a,b)=>a+b,0);
+  if(total===0) return `<div class="empty">No entries yet.</div>`;
+  const cx=size/2, cy=size/2, r=radius;
+  let cumulative=0;
+  const keys = Object.keys(counts).filter(k=>counts[k]>0);
+  const paths = keys.map((k,i)=>{
+    const value = counts[k];
+    const color = colorFn(k,i);
+    if(value===total) return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+    const startAngle=(cumulative/total)*2*Math.PI; cumulative+=value; const endAngle=(cumulative/total)*2*Math.PI;
+    const x1=cx+r*Math.sin(startAngle), y1=cy-r*Math.cos(startAngle);
+    const x2=cx+r*Math.sin(endAngle), y2=cy-r*Math.cos(endAngle);
+    const largeArc=(endAngle-startAngle)>Math.PI?1:0;
+    return `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z" fill="${color}"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${paths}</svg>`;
+}
+
+function renderPieChart(counts){
+  const total = Object.values(counts).reduce((a,b)=>a+b,0);
+  if(total===0) return `<div class="empty">Log a few activities to see your breakdown here.</div>`;
+  const r=80, cx=100, cy=100;
+  let cumulative = 0;
+  const active = AREA_KEYS.filter(a=>counts[a]>0);
+  const paths = active.map(a=>{
+    const value = counts[a];
+    const selected = state.pieDrilldown===a;
+    const dimmed = state.pieDrilldown && !selected;
+    const opacity = dimmed ? 0.35 : 1;
+    const stroke = selected ? `stroke="#1B2633" stroke-width="3"` : '';
+    if(value===total){
+      return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${state.areas[a].color}" opacity="${opacity}" ${stroke} style="cursor:pointer" onclick="selectPieArea('${a}')"/>`;
+    }
+    const startAngle = (cumulative/total) * 2*Math.PI;
+    cumulative += value;
+    const endAngle = (cumulative/total) * 2*Math.PI;
+    const x1 = cx + r*Math.sin(startAngle), y1 = cy - r*Math.cos(startAngle);
+    const x2 = cx + r*Math.sin(endAngle), y2 = cy - r*Math.cos(endAngle);
+    const largeArc = (endAngle-startAngle) > Math.PI ? 1 : 0;
+    return `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z" fill="${state.areas[a].color}" opacity="${opacity}" ${stroke} style="cursor:pointer" onclick="selectPieArea('${a}')"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 200 200" width="200" height="200">${paths}</svg>`;
+}
+
+function renderPieLegend(counts){
+  const total = Object.values(counts).reduce((a,b)=>a+b,0);
+  if(total===0) return '';
+  return AREA_KEYS.filter(a=>counts[a]>0).map(a=>{
+    const pct = Math.round((counts[a]/total)*100);
+    const selected = state.pieDrilldown===a;
+    return `<div class="legend-row ${selected?'selected':''}" onclick="selectPieArea('${a}')"><span class="legend-swatch" style="background:${state.areas[a].color}"></span><span class="legend-label">${areaLabel(a)}</span><span class="legend-pct">${pct}% · ${counts[a]}</span></div>`;
+  }).join('');
+}
+
+function selectPieArea(a){ state.pieDrilldown = (state.pieDrilldown===a) ? null : a; render(); }
+function clearPieDrilldown(){ state.pieDrilldown = null; render(); }
+
+function renderDrilldownCard(){
+  if(!state.pieDrilldown) return '';
+  const area = state.pieDrilldown;
+  const def = state.areas[area];
+  const counts = computeAreaBreakdown(area);
+  const total = Object.values(counts).reduce((a,b)=>a+b,0);
+  const shadeSteps = [0,-22,22,-38,38,-50,50,-62];
+  const colorFn = (k,i)=>shadeColor(def.color, shadeSteps[i % shadeSteps.length]);
+  const unit = def.groups ? 'group' : 'category';
+  return `
+    <div class="data-card">
+      <h3>${areaLabel(area)} breakdown</h3>
+      <p>${total} logged ${total===1?'activity':'activities'} in ${areaLabel(area)}, by ${unit}.</p>
+      ${total===0 ? `<div class="empty">Nothing logged here yet.</div>` : `
+        <div class="pie-wrap">
+          ${renderGenericPie(counts, colorFn, 150, 62)}
+          <div class="pie-legend">
+            ${Object.keys(counts).filter(k=>counts[k]>0).map((k,i)=>{
+              const pct = Math.round((counts[k]/total)*100);
+              return `<div class="legend-row"><span class="legend-swatch" style="background:${colorFn(k,i)}"></span><span class="legend-label">${escapeHtml(k)}</span><span class="legend-pct">${pct}% · ${counts[k]}</span></div>`;
+            }).join('')}
+          </div>
+        </div>
+      `}
+      <button class="ghost-btn" style="width:100%;margin-top:10px;" onclick="clearPieDrilldown()">Back to all areas</button>
+    </div>
+  `;
+}
+
+function renderHomeView(){
+  const counts = computeAreaCounts();
+  const total = Object.values(counts).reduce((a,b)=>a+b,0);
+  const thisWeek = mondayOf(new Date());
+  return `
+    <div class="data-card">
+      <h3>Where your effort goes</h3>
+      <p>${total} logged ${total===1?'activity':'activities'} across all time, by area. Tap a slice (or a row below it) to break it down further.</p>
+      <div class="pie-wrap">
+        ${renderPieChart(counts)}
+        <div class="pie-legend">${renderPieLegend(counts)}</div>
+      </div>
+    </div>
+    ${renderDrilldownCard()}
+    ${state.goals.length ? renderGoalsProgressCard(thisWeek, "This week's goals") : `<div class="hint">Set a goal in the Data tab to see progress here.</div>`}
   `;
 }
 
@@ -469,7 +728,7 @@ function renderDayCard(day, idx, anchor, plan){
         const isEditing = state.editingPlanItem && state.editingPlanItem.day===day && state.editingPlanItem.i===i;
         return `
         <div class="plan-item ${item.done?'done':''}">
-          ${state.weekMode==='plan' ? `<div class="check ${item.done?'done':''}" onclick="toggleDone('${day}',${i})">${item.done?'✓':''}</div>` : ''}
+          ${state.weekMode==='plan' ? `<div class="check ${item.done?'done':''}" onclick="toggleDone('${day}',${i})">${item.done?'<span class="check-mark">✓</span>':''}</div>` : ''}
           <div style="flex:1;min-width:0;">
             <button class="entry-title" onclick="togglePlanExpand('${key}')">
               <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(title)}</span>
@@ -514,7 +773,7 @@ function renderLoggedActivity(e){
   const expanded = state.expandedEntries.has(e.timestamp);
   return `
     <div class="plan-item done">
-      <div class="check done" style="cursor:default;" title="Logged activity">✓</div>
+      <div class="check done" style="cursor:default;" title="Logged activity"><span class="check-mark">✓</span></div>
       <div style="flex:1;min-width:0;">
         <button class="entry-title" onclick="toggleEntryExpand(${e.timestamp})">
           <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(e.title || categoriesJoin(e.tags))}</span>
@@ -589,9 +848,94 @@ function renderSettingsCard(){
   `;
 }
 
+function renderGoalsCard(){
+  const def = state.areas[state.goalArea];
+  const isGrouped = !!def.groups;
+  return `
+    <div class="data-card">
+      <h3>Goals</h3>
+      <p>Set a weekly target for an area — or a specific group within it — and track progress in the Week view.</p>
+      ${state.goals.length ? state.goals.map(g=>{
+        const label = g.group ? `${g.group} · ${areaLabel(g.area)}` : areaLabel(g.area);
+        return `<div class="goal-manage-row"><span>${escapeHtml(label)} — ${g.target}/week</span><button class="del" onclick="removeGoal(${g.id})" aria-label="Remove goal">×</button></div>`;
+      }).join('') : `<div class="hint">No goals yet — add one below.</div>`}
+      <div class="divider" style="margin:14px 0;"></div>
+      <div class="group-row">
+        ${AREA_KEYS.map(a=>`<button class="area-chip ${a===state.goalArea?'active':''}" onclick="setGoalArea('${a}')">${areaLabel(a)}</button>`).join('')}
+      </div>
+      ${isGrouped ? `
+        <div class="group-row">
+          <button class="group-chip ${state.goalGroup===null?'active':''}" onclick="setGoalGroup(null)">Whole area</button>
+          ${Object.keys(def.groups).map(g=>`<button class="group-chip ${state.goalGroup===g?'active':''}" onclick="setGoalGroup('${escJs(g)}')">${g}</button>`).join('')}
+        </div>
+      `:''}
+      <div class="inline-form">
+        <input type="number" id="goalTargetInput" class="text-input" placeholder="Target per week" min="1" value="3">
+        <button class="log-btn small btn-compact" onclick="addGoal()">Add goal</button>
+      </div>
+    </div>
+  `;
+}
+
+function badgeIcon(area, color){
+  switch(area){
+    case 'Physical':
+      return `<polygon points="28,14 40,34 16,34" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/><polygon points="28,14 32,20 24,20" fill="${color}"/>`;
+    case 'Nutrition':
+      return `<path d="M28,13 C19,16 17,27 28,34 C39,27 37,16 28,13 Z" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/><line x1="28" y1="15" x2="28" y2="32" stroke="${color}" stroke-width="1.6"/>`;
+    case 'Adventure':
+      return `<polygon points="28,14 40,34 16,34" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/><path d="M24,34 L24,25 L28,21 L32,25 L32,34" fill="none" stroke="${color}" stroke-width="1.8"/>`;
+    case 'Mental':
+      return `<path d="M28,15 C23,13 18,14 15,16 L15,29 C18,27 23,26 28,28 Z" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/><path d="M28,15 C33,13 38,14 41,16 L41,29 C38,27 33,26 28,28 Z" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>`;
+    case 'Growth':
+      return `<line x1="28" y1="34" x2="28" y2="20" stroke="${color}" stroke-width="2"/><path d="M28,20 C21,20 19,13 19,13 C19,13 26,11 28,20 Z" fill="${color}"/><path d="M28,20 C35,20 37,13 37,13 C37,13 30,11 28,20 Z" fill="${color}"/>`;
+    default:
+      return '';
+  }
+}
+function badgeArrowheadSVG(area, tier, unlocked){
+  const fillColor = unlocked ? state.areas[area].color : '#E3DFD3';
+  const iconColor = unlocked ? textColorFor(fillColor) : '#A39E90';
+  return `
+    <svg viewBox="0 0 56 68">
+      <path d="M28,2 C10,2 4,13 4,24 C4,42 15,53 28,66 C41,53 52,42 52,24 C52,13 46,2 28,2 Z" fill="${fillColor}" stroke="${tier.ring}" stroke-width="3.5"/>
+      ${badgeIcon(area, iconColor)}
+      <text x="28" y="53" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" font-weight="600" fill="${iconColor}">${tier.threshold}</text>
+    </svg>
+  `;
+}
+
+function renderBadgesCard(){
+  return `
+    <div class="data-card">
+      <h3>Badges</h3>
+      <p>Bronze, Silver, and Gold unlock per area as your logged activities there add up — ${BADGE_TIERS.map(t=>`${t.name} at ${t.threshold}`).join(', ')}.</p>
+      <div class="badge-grid">
+        ${AREA_KEYS.map(a=>{
+          const count = areaEntryCount(a);
+          return `
+            <div class="badge-col">
+              <div class="badge-area-label">${areaLabel(a)}</div>
+              <div class="badge-row">
+                ${BADGE_TIERS.map(tier=>{
+                  const unlocked = count >= tier.threshold;
+                  return `<div class="badge ${unlocked?'unlocked':''}" title="${tier.name} — ${tier.threshold}+ logged">${badgeArrowheadSVG(a, tier, unlocked)}</div>`;
+                }).join('')}
+              </div>
+              <div class="badge-count">${count} logged</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderDataView(){
   return `
     ${renderSettingsCard()}
+    ${renderGoalsCard()}
+    ${renderBadgesCard()}
     <div class="data-card">
       <h3>Export CSV</h3>
       <p>All logged entries — date, time, title, tags, notes — as a spreadsheet-friendly file.</p>
@@ -599,12 +943,12 @@ function renderDataView(){
     </div>
     <div class="data-card">
       <h3>Full backup</h3>
-      <p>Everything: entries, your recurring template, every week's plan, and your custom categories/tags. Use this to move data between devices or browsers, or just to keep an offsite copy.</p>
+      <p>Everything: entries, your recurring template, every week's plan, your custom categories/tags, and your goals. Use this to move data between devices or browsers, or just to keep an offsite copy.</p>
       <button class="log-btn small" onclick="exportBackup()">Export backup.json</button>
     </div>
     <div class="data-card">
       <h3>Restore from backup</h3>
-      <p>Loads a backup.json file. Existing entries, template, plans, and categories will be overwritten with what's in the file.</p>
+      <p>Loads a backup.json file. Existing entries, template, plans, categories, and goals will be overwritten with what's in the file.</p>
       <label class="file-input-label">Choose backup.json
         <input type="file" accept="application/json" onchange="importBackupFile(event)">
       </label>
@@ -614,7 +958,9 @@ function renderDataView(){
 }
 
 /* ---------------- Actions ---------------- */
-function setView(v){ state.view=v; render(); }
+function setView(v){ state.view=v; state.menuOpen=false; render(); }
+function toggleMenu(){ state.menuOpen = !state.menuOpen; render(); }
+function closeMenu(){ state.menuOpen = false; render(); }
 function setLogArea(a){ state.logBrowseArea=a; state.logBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
 function setLogGroup(g){ state.logBrowseGroup=g; render(); }
 function setFilter(a){ state.filterArea=a; render(); }
@@ -860,6 +1206,23 @@ function removeSettingsGroup(area, group){
   showToast('Group removed');
 }
 
+function setGoalArea(a){ state.goalArea = a; state.goalGroup = null; render(); }
+function setGoalGroup(g){ state.goalGroup = g; render(); }
+function addGoal(){
+  const input = document.getElementById('goalTargetInput');
+  const target = parseInt(input.value, 10);
+  if(!target || target<1){ showToast('Enter a target of at least 1'); return; }
+  state.goals.push({ id: Date.now(), area: state.goalArea, group: state.goalGroup || null, target });
+  saveGoals();
+  render();
+  showToast('Goal added ✓');
+}
+function removeGoal(id){
+  state.goals = state.goals.filter(g=>g.id!==id);
+  saveGoals();
+  render();
+}
+
 /* ---------------- Export / Import ---------------- */
 function csvEscape(field){
   const s = String(field ?? '');
@@ -888,7 +1251,7 @@ function exportCSV(){
   showToast('CSV exported ✓');
 }
 function exportBackup(){
-  const backup = { exportedAt: new Date().toISOString(), entries: state.entries, template: state.template, areas: state.areas, plans: {} };
+  const backup = { exportedAt: new Date().toISOString(), entries: state.entries, template: state.template, areas: state.areas, goals: state.goals, plans: {} };
   for(let i=0;i<localStorage.length;i++){
     const k = localStorage.key(i);
     if(k && k.startsWith(PLAN_PREFIX)){
@@ -917,6 +1280,10 @@ function importBackupFile(evt){
         state.areas = data.areas;
         saveAreas();
       }
+      if(Array.isArray(data.goals)){
+        state.goals = data.goals;
+        saveGoals();
+      }
       if(data.plans){
         Object.keys(data.plans).forEach(weekAnchor=>{
           const normalized = normalizeWeek(data.plans[weekAnchor]);
@@ -937,6 +1304,7 @@ function importBackupFile(evt){
   loadAreas();
   loadEntries();
   loadTemplate();
+  loadGoals();
   loadPlan(state.weekAnchor);
   render();
 })();
