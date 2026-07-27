@@ -180,6 +180,12 @@
   .legend-swatch{width:12px;height:12px;border-radius:3px;flex:none;}
   .legend-label{flex:1;}
   .legend-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);flex:none;}
+
+  .contrib-row{padding:8px 0;border-top:1px solid var(--fog);}
+  .contrib-row:first-of-type{border-top:none;}
+  .contrib-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .contrib-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .contrib-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate);}
 </style>
 </head>
 <body>
@@ -282,8 +288,8 @@ function textColorFor(hex){
 }
 function categoriesJoin(tags){ return tags.map(t=>t.category).join(', '); }
 function planAutoTitle(tags){
-  const areas = [...new Set(tags.map(t=>areaLabel(t.area)))];
-  return areas.join(' + ');
+  const parts = [...new Set(tags.map(t=> t.group || t.category))];
+  return parts.join(' + ');
 }
 
 /* ---------------- Storage (localStorage) ---------------- */
@@ -733,6 +739,26 @@ function selectPieArea(a){ state.pieDrilldown = (state.pieDrilldown===a) ? null 
 function clearPieDrilldown(){ state.pieDrilldown = null; render(); }
 function setPieRange(r){ state.pieRange = r; render(); }
 
+function renderDrilldownActivityList(area, range){
+  const entries = entriesInRange(range).filter(e=>e.tags.some(t=>t.area===area)).sort((a,b)=>b.timestamp-a.timestamp);
+  if(entries.length===0) return '';
+  return `
+    <div class="section-label" style="margin-top:16px;">Contributing activities</div>
+    ${entries.map(e=>{
+      const relevantTags = e.tags.filter(t=>t.area===area);
+      return `
+        <div class="contrib-row">
+          <div class="contrib-title">${escapeHtml(e.title || categoriesJoin(e.tags))}</div>
+          <div class="contrib-meta">
+            <span class="contrib-date">${fmtShort(e.date)}</span>
+            ${relevantTags.map(t=>tagPill(t,false)).join('')}
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
 function renderDrilldownCard(){
   if(!state.pieDrilldown) return '';
   const area = state.pieDrilldown;
@@ -756,6 +782,7 @@ function renderDrilldownCard(){
             }).join('')}
           </div>
         </div>
+        ${renderDrilldownActivityList(area, state.pieRange)}
       `}
       <button class="ghost-btn" style="width:100%;margin-top:10px;" onclick="clearPieDrilldown()">Back to all areas</button>
     </div>
