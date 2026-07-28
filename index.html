@@ -38,6 +38,14 @@
   .menu-item:last-child{border-bottom:none;}
   .menu-item.active{background:linear-gradient(180deg,#8C6A44 0%,var(--amber) 45%,#5F4429 100%);color:#fff;}
   .menu-divider{height:1px;background:var(--line);}
+
+  .onboarding-backdrop{position:fixed;inset:0;background:rgba(27,38,51,0.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .onboarding-card{max-width:360px;text-align:center;}
+  .onboarding-dots{display:flex;justify-content:center;gap:6px;margin-bottom:16px;}
+  .dot-step{width:7px;height:7px;border-radius:50%;background:var(--line);display:inline-block;}
+  .dot-step.active{background:var(--amber);}
+  .onboarding-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:0.4px;color:var(--text);margin:0 0 10px;}
+  .onboarding-body{font-family:'Inter',sans-serif;font-size:14px;color:var(--slate);line-height:1.55;margin:0;}
   .menu-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);}
   .switch{width:38px;height:22px;border-radius:12px;background:var(--line);border:none;position:relative;cursor:pointer;flex:none;padding:0;}
   .switch.on{background:var(--amber);}
@@ -232,6 +240,14 @@ const PLAN_PREFIX = 'weekly-plan:';
 const AREAS_KEY = 'new-tracker-areas-config';
 const GOALS_KEY = 'new-tracker-goals';
 const THEME_KEY = 'new-tracker-theme';
+const ONBOARDING_KEY = 'new-tracker-onboarding-seen';
+const ONBOARDING_SLIDES = [
+  { view:'home', title:'Welcome to N.E.W. Tracker', body:"A personal tracker for the different sides of your life — Physical, Food, Adventure, Mental, Growth, and Social. Log what you do, plan what's ahead, and see where your time actually goes." },
+  { view:'log', title:'Log', body:"Tap tags — mix any areas together freely — add a title if you'd like, and log it. Your history builds up below; tap any entry to see its tags and notes, or edit them later." },
+  { view:'week', title:'Week', body:"Set up a recurring weekly plan, then check things off as you go. Anything you log from the Log tab shows up here too, automatically marked as done on the day it happened." },
+  { view:'home', title:'Home', body:"A pie chart of where your effort actually goes — tap a slice to break it down further — plus your goals' weekly progress and badges that unlock as you log more in each area." },
+  { view:'data', title:'Data', body:"Everything lives only in this browser — nothing leaves your device unless you export it. Add your own tags and groups, set weekly goals, and back up or restore your data anytime." }
+];
 const BADGE_TIERS = [
   { name:'Bronze', threshold:10, ring:'#B08D57' },
   { name:'Silver', threshold:25, ring:'#9AA3AC' },
@@ -260,6 +276,8 @@ let state = {
   pieDrilldown: null,
   menuOpen: false,
   theme: 'light',
+  showOnboarding: false,
+  onboardingStep: 0,
   expandedGoalAreas: new Set(),
   expandedGoalHitAreas: new Set(),
   pieRange: 'all'
@@ -461,6 +479,7 @@ function render(){
         <button class="menu-item ${state.view==='week'?'active':''}" onclick="setView('week')">Week</button>
         <button class="menu-item ${state.view==='data'?'active':''}" onclick="setView('data')">Data</button>
         <div class="menu-divider"></div>
+        <button class="menu-item" onclick="openOnboarding()">Tutorial</button>
         <div class="menu-toggle-row">
           <span>Dark mode</span>
           <button class="switch ${state.theme==='dark'?'on':''}" onclick="toggleTheme()" aria-label="Toggle dark mode"><span class="switch-knob"></span></button>
@@ -471,6 +490,7 @@ function render(){
       ${state.view==='home' ? renderHomeView() : state.view==='log' ? renderLogView() : state.view==='week' ? renderWeekView() : renderDataView()}
     </div>
     ${state.pendingEntry ? renderPendingModal() : ''}
+    ${state.showOnboarding ? renderOnboardingModal() : ''}
     <div class="toast" id="toast"></div>
   `;
 }
@@ -1138,6 +1158,50 @@ function toggleTheme(){
 }
 
 function setView(v){ state.view=v; state.menuOpen=false; state.editingEntryId=null; render(); }
+function renderOnboardingModal(){
+  const slides = ONBOARDING_SLIDES;
+  const i = state.onboardingStep;
+  const slide = slides[i];
+  const isLast = i === slides.length-1;
+  return `
+    <div class="onboarding-backdrop">
+      <div class="modal-card onboarding-card">
+        <div class="onboarding-dots">
+          ${slides.map((s,idx)=>`<span class="dot-step ${idx===i?'active':''}"></span>`).join('')}
+        </div>
+        <h2 class="onboarding-title">${slide.title}</h2>
+        <p class="onboarding-body">${slide.body}</p>
+        <div class="picker-actions" style="margin-top:16px;">
+          ${i>0 ? `<button class="ghost-btn" onclick="prevOnboardingStep()">Back</button>` : `<button class="ghost-btn" onclick="dismissOnboarding()">Skip</button>`}
+          <button class="log-btn small" onclick="${isLast ? 'dismissOnboarding()' : 'nextOnboardingStep()'}">${isLast ? "Let's go" : 'Next'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function nextOnboardingStep(){
+  state.onboardingStep = Math.min(ONBOARDING_SLIDES.length-1, state.onboardingStep+1);
+  state.view = ONBOARDING_SLIDES[state.onboardingStep].view;
+  render();
+}
+function prevOnboardingStep(){
+  state.onboardingStep = Math.max(0, state.onboardingStep-1);
+  state.view = ONBOARDING_SLIDES[state.onboardingStep].view;
+  render();
+}
+function dismissOnboarding(){
+  state.showOnboarding = false;
+  try{ localStorage.setItem(ONBOARDING_KEY, '1'); }catch(e){}
+  render();
+}
+function openOnboarding(){
+  state.onboardingStep = 0;
+  state.showOnboarding = true;
+  state.menuOpen = false;
+  state.view = ONBOARDING_SLIDES[0].view;
+  render();
+}
+
 function toggleMenu(){ state.menuOpen = !state.menuOpen; render(); }
 function closeMenu(){ state.menuOpen = false; render(); }
 function setLogArea(a){ state.logBrowseArea=a; state.logBrowseGroup = state.areas[a].groups?Object.keys(state.areas[a].groups)[0]:null; render(); }
@@ -1508,6 +1572,9 @@ function importBackupFile(evt){
   loadTemplate();
   loadGoals();
   loadPlan(state.weekAnchor);
+  try{ state.showOnboarding = localStorage.getItem(ONBOARDING_KEY) !== '1'; }
+  catch(e){ state.showOnboarding = true; }
+  if(state.showOnboarding) state.view = ONBOARDING_SLIDES[0].view;
   render();
 })();
 </script>
