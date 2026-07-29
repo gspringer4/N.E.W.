@@ -46,6 +46,15 @@
   .dot-step.active{background:var(--amber);}
   .onboarding-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:0.4px;color:var(--text);margin:0 0 10px;}
   .onboarding-body{font-family:'Inter',sans-serif;font-size:14px;color:var(--slate);line-height:1.55;margin:0;}
+
+  .today-card .today-head-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+  .today-card .today-head-row h3{margin:0;}
+  .today-item-title{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--text);}
+
+  .celebration-card{text-align:center;}
+  .confetti{font-size:34px;margin-bottom:4px;animation:confettiPop .5s ease;}
+  @keyframes confettiPop{0%{transform:scale(0) rotate(-15deg);opacity:0;}60%{transform:scale(1.25) rotate(8deg);opacity:1;}100%{transform:scale(1) rotate(0);}}
+  .badge-celebrate-icon svg{width:110px;height:auto;margin:0 auto 10px;display:block;}
   .menu-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);}
   .switch{width:38px;height:22px;border-radius:12px;background:var(--line);border:none;position:relative;cursor:pointer;flex:none;padding:0;}
   .switch.on{background:var(--amber);}
@@ -127,6 +136,8 @@
   .plan-item:first-of-type{border-top:none;}
   .check{width:18px;height:18px;border:1.5px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface);margin-top:4px;border-radius:2px;transform:rotate(45deg);}
   .check.done{background:var(--teal);border-color:var(--teal);}
+  @keyframes popCheck{0%{transform:rotate(45deg) scale(1);}45%{transform:rotate(45deg) scale(1.4);}100%{transform:rotate(45deg) scale(1);}}
+  .check.pop{animation:popCheck .35s ease;}
   .check-mark{display:inline-block;transform:rotate(-45deg);color:#fff;font-size:10px;font-weight:700;line-height:1;}
   .plan-item .tagrow{flex:1;display:flex;flex-wrap:wrap;gap:5px;}
   .plan-item.done .tag-pill{opacity:0.55;}
@@ -155,6 +166,7 @@
   .inline-form{display:flex;gap:8px;margin-bottom:14px;}
 
   .date-fix-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .date-fix-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate-light);text-transform:uppercase;letter-spacing:0.3px;flex:none;}
   .date-fix-input{border:1px solid var(--line);border-radius:6px;padding:3px 6px;font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;color:var(--slate);width:auto;}
   .date-fix-btn{border:none;background:none;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;color:var(--slate);cursor:pointer;padding:3px 4px;text-decoration:underline;text-decoration-color:var(--line);}
   .date-fix-btn:hover{color:var(--teal-dark);}
@@ -242,8 +254,8 @@ const GOALS_KEY = 'new-tracker-goals';
 const THEME_KEY = 'new-tracker-theme';
 const ONBOARDING_KEY = 'new-tracker-onboarding-seen';
 const ONBOARDING_SLIDES = [
-  { view:'home', title:'Welcome to N.E.W. Tracker', body:"A personal tracker for the different sides of your life — Physical, Food, Adventure, Mental, Growth, and Social. Log what you do, plan what's ahead, and see where your time actually goes." },
-  { view:'log', title:'Log', body:"Tap tags — mix any areas together freely — add a title if you'd like, and log it. Your history builds up below; tap any entry to see its tags and notes, or edit them later." },
+  { view:'home', title:'Welcome to N.E.W. Tracker', body:"Think habit tracker meets journal meets planner. N.E.W. stands for Nature's Elegant Weapon — a personal tracker for the different sides of your life: Physical, Food, Adventure, Mental, Growth, and Social. Log what you do, plan what's ahead, and see where your time actually goes." },
+  { view:'log', title:'Log', body:"Tap an area (like Physical) to open its groups (like Strength), then tap a specific tag (like Upper Body) — mix any areas together freely. Add a title if you'd like, and log it. Your history builds up below; tap any entry to see its tags and notes, or edit them later." },
   { view:'week', title:'Week', body:"Set up a recurring weekly plan, then check things off as you go. Anything you log from the Log tab shows up here too, automatically marked as done on the day it happened." },
   { view:'home', title:'Home', body:"A pie chart of where your effort actually goes — tap a slice to break it down further — plus your goals' weekly progress and badges that unlock as you log more in each area." },
   { view:'data', title:'Data', body:"Everything lives only in this browser — nothing leaves your device unless you export it. Add your own tags and groups, set weekly goals, and back up or restore your data anytime." }
@@ -253,6 +265,7 @@ const BADGE_TIERS = [
   { name:'Silver', threshold:25, ring:'#9AA3AC' },
   { name:'Gold', threshold:50, ring:'#C9A227' }
 ];
+const BADGES_SEEN_KEY = 'new-tracker-badges-seen';
 
 let state = {
   entries: [],
@@ -280,7 +293,9 @@ let state = {
   onboardingStep: 0,
   expandedGoalAreas: new Set(),
   expandedGoalHitAreas: new Set(),
-  pieRange: 'all'
+  pieRange: 'all',
+  seenBadges: new Set(),
+  badgeCelebration: null
 };
 
 function emptyWeek(){ const w={}; DAYS.forEach(d=>w[d]=[]); return w; }
@@ -394,6 +409,57 @@ function goalProgress(goal, weekAnchor){
 function areaEntryCount(area){
   return state.entries.filter(e=>e.tags.some(t=>t.area===area)).length;
 }
+
+function loadSeenBadges(){
+  try{
+    const raw = localStorage.getItem(BADGES_SEEN_KEY);
+    if(raw){
+      state.seenBadges = new Set(JSON.parse(raw));
+    } else {
+      const seed = new Set();
+      AREA_KEYS.forEach(a=>{
+        const count = areaEntryCount(a);
+        BADGE_TIERS.forEach(tier=>{ if(count>=tier.threshold) seed.add(a+':'+tier.name); });
+      });
+      state.seenBadges = seed;
+      localStorage.setItem(BADGES_SEEN_KEY, JSON.stringify([...seed]));
+    }
+  }catch(e){ state.seenBadges = new Set(); }
+}
+function saveSeenBadges(){
+  try{ localStorage.setItem(BADGES_SEEN_KEY, JSON.stringify([...state.seenBadges])); }catch(e){}
+}
+function checkForNewBadges(){
+  let firstNew = null;
+  AREA_KEYS.forEach(a=>{
+    const count = areaEntryCount(a);
+    BADGE_TIERS.forEach(tier=>{
+      const key = a+':'+tier.name;
+      if(count>=tier.threshold && !state.seenBadges.has(key)){
+        state.seenBadges.add(key);
+        if(!firstNew) firstNew = { area:a, tier };
+      }
+    });
+  });
+  if(firstNew){
+    saveSeenBadges();
+    state.badgeCelebration = firstNew;
+  }
+}
+
+function todayDayCode(){
+  const map = {0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat'};
+  return map[new Date().getDay()];
+}
+function popAnimate(selector){
+  requestAnimationFrame(()=>{
+    const el = document.querySelector(selector);
+    if(!el) return;
+    el.classList.add('pop');
+    el.addEventListener('animationend', ()=>el.classList.remove('pop'), {once:true});
+  });
+}
+
 function showToast(msg){
   const t=document.getElementById('toast'); if(!t) return;
   t.textContent=msg; t.classList.add('show');
@@ -491,6 +557,7 @@ function render(){
     </div>
     ${state.pendingEntry ? renderPendingModal() : ''}
     ${state.showOnboarding ? renderOnboardingModal() : ''}
+    ${state.badgeCelebration ? renderBadgeCelebration() : ''}
     <div class="toast" id="toast"></div>
   `;
 }
@@ -572,8 +639,9 @@ function renderHistory(){
             ${e.notes?`<div class="note">${escapeHtml(e.notes)}</div>`:''}
             <button class="add-day-btn" style="margin-top:8px;" onclick="openEditEntryTags(${e.timestamp})">Edit tags</button>
             <div class="date-fix-row">
+              <span class="date-fix-hint">Wrong day?</span>
               <input type="date" id="dateEdit-${e.timestamp}" class="date-fix-input" value="${e.date}">
-              <button class="date-fix-btn" onclick="updateEntryDate(${e.timestamp})">Fix date</button>
+              <button class="date-fix-btn" onclick="updateEntryDate(${e.timestamp})">Change date</button>
             </div>
           `) : ''}
         </div>`;
@@ -594,10 +662,10 @@ function renderWeekView(){
       <button onclick="shiftWeek(1)" aria-label="Next week">›</button>
     </div>
     <div class="mode-row">
-      <button class="mode-chip ${state.weekMode==='plan'?'active':''}" onclick="setWeekMode('plan')">This week's plan</button>
-      <button class="mode-chip ${state.weekMode==='template'?'active':''}" onclick="setWeekMode('template')">Edit recurring template</button>
+      <button class="mode-chip ${state.weekMode==='plan'?'active':''}" onclick="setWeekMode('plan')">This Week</button>
+      <button class="mode-chip ${state.weekMode==='template'?'active':''}" onclick="setWeekMode('template')">Weekly Default</button>
     </div>
-    ${state.weekMode==='template' ? `<div class="hint">Changes here set the default for future weeks — they won't rewrite weeks you've already customized.</div>` : ''}
+    <div class="hint">${state.weekMode==='template' ? "Changes here set the default for future weeks — they won't rewrite weeks you've already customized." : "This Week shows what's actually planned for these dates. Weekly Default sets what future weeks start with."}</div>
     ${state.weekMode==='plan' ? renderGoalsProgressCard(state.weekAnchor, "Goals this week") : ''}
     ${DAYS.map((d,i)=>renderDayCard(d,i,anchor,plan)).join('')}
   `;
@@ -858,8 +926,57 @@ function renderGoalHitRateCard(){
   return `
     <div class="data-card">
       <h3>Goal consistency</h3>
-      <p>How often you've hit each goal, week over week (last 12 completed weeks — this week doesn't count until it's over).</p>
+      <p>How often you've hit each goal, week over week (last 12 completed weeks — <strong>this week doesn't count until it's over</strong>).</p>
       ${sections}
+    </div>
+  `;
+}
+
+function toggleTodayDone(i){
+  const anchor = mondayOf(new Date());
+  const plan = loadPlan(anchor);
+  const day = todayDayCode();
+  const item = plan[day][i];
+  const goingDone = !item.done;
+  item.done = goingDone;
+  savePlan(anchor);
+  if(goingDone){
+    state.pendingEntry = { day, i, tags:[...item.tags], dateISO: todayISO() };
+  }
+  render();
+  if(goingDone) popAnimate(`[data-check-id="today-${i}"]`);
+}
+function renderTodayItemRow(item, i){
+  const title = planAutoTitle(item.tags);
+  return `
+    <div class="plan-item ${item.done?'done':''}">
+      <div class="check ${item.done?'done':''}" data-check-id="today-${i}" onclick="toggleTodayDone(${i})">${item.done?'<span class="check-mark">✓</span>':''}</div>
+      <div style="flex:1;min-width:0;">
+        <span class="today-item-title">${escapeHtml(title)}</span>
+      </div>
+    </div>
+  `;
+}
+function renderTodayWidget(){
+  const anchor = mondayOf(new Date());
+  const plan = loadPlan(anchor);
+  const day = todayDayCode();
+  const items = plan[day] || [];
+  const loggedToday = state.entries.filter(e=>e.date===todayISO() && !e.fromPlan);
+  const totalCount = items.length + loggedToday.length;
+  const doneCount = items.filter(it=>it.done).length + loggedToday.length;
+  return `
+    <div class="data-card today-card">
+      <div class="today-head-row">
+        <h3>Today</h3>
+        <button class="log-btn small btn-compact" onclick="setView('log')">+ Log something</button>
+      </div>
+      ${totalCount===0
+        ? `<div class="empty">Nothing planned or logged yet today.</div>`
+        : `<p>${doneCount} of ${totalCount} done</p>
+           ${items.map((item,i)=>renderTodayItemRow(item,i)).join('')}
+           ${loggedToday.map(e=>renderLoggedActivity(e)).join('')}`
+      }
     </div>
   `;
 }
@@ -869,6 +986,7 @@ function renderHomeView(){
   const total = Object.values(counts).reduce((a,b)=>a+b,0);
   const thisWeek = mondayOf(new Date());
   return `
+    ${renderTodayWidget()}
     <div class="data-card">
       <h3>Where your effort goes</h3>
       <div class="filter-row">
@@ -886,6 +1004,7 @@ function renderHomeView(){
     ${renderDrilldownCard()}
     ${state.goals.length ? renderGoalsProgressCard(thisWeek, "This week's goals") : `<div class="hint">Set a goal in the Data tab to see progress here.</div>`}
     ${renderGoalHitRateCard()}
+    ${renderBadgesCard()}
   `;
 }
 
@@ -910,7 +1029,7 @@ function renderDayCard(day, idx, anchor, plan){
         const isEditing = state.editingPlanItem && state.editingPlanItem.day===day && state.editingPlanItem.i===i;
         return `
         <div class="plan-item ${item.done?'done':''}">
-          ${state.weekMode==='plan' ? `<div class="check ${item.done?'done':''}" onclick="toggleDone('${day}',${i})">${item.done?'<span class="check-mark">✓</span>':''}</div>` : ''}
+          ${state.weekMode==='plan' ? `<div class="check ${item.done?'done':''}" data-check-id="wk-${day}-${i}" onclick="toggleDone('${day}',${i})">${item.done?'<span class="check-mark">✓</span>':''}</div>` : ''}
           <div style="flex:1;min-width:0;">
             <button class="entry-title" onclick="togglePlanExpand('${key}')">
               <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(title)}</span>
@@ -1038,7 +1157,7 @@ function renderGoalsCard(){
   return `
     <div class="data-card">
       <h3>Goals</h3>
-      <p>Set a weekly target for an area — or a specific group within it — and track progress in the Week view.</p>
+      <p><strong>Goals are targets you set yourself.</strong> Set a weekly target for an area — or a specific group within it — and track progress in the Week view and on Home.</p>
       ${state.goals.length ? state.goals.map(g=>{
         const label = g.group ? `${g.group} · ${areaLabel(g.area)}` : areaLabel(g.area);
         return `<div class="goal-manage-row"><span>${escapeHtml(label)} — ${g.target}/week</span><button class="del" onclick="removeGoal(${g.id})" aria-label="Remove goal">×</button></div>`;
@@ -1089,11 +1208,27 @@ function badgeArrowheadSVG(area, tier, unlocked){
   `;
 }
 
+function renderBadgeCelebration(){
+  const { area, tier } = state.badgeCelebration;
+  return `
+    <div class="onboarding-backdrop" style="z-index:60;" onclick="dismissBadgeCelebration()">
+      <div class="modal-card onboarding-card celebration-card" onclick="event.stopPropagation()">
+        <div class="confetti">🎉</div>
+        <div class="badge-celebrate-icon">${badgeArrowheadSVG(area, tier, true)}</div>
+        <h2 class="onboarding-title">${tier.name} Badge!</h2>
+        <p class="onboarding-body">You've logged ${tier.threshold}+ activities in ${areaLabel(area)}.</p>
+        <button class="log-btn small" style="margin-top:14px;width:100%;" onclick="dismissBadgeCelebration()">Nice!</button>
+      </div>
+    </div>
+  `;
+}
+function dismissBadgeCelebration(){ state.badgeCelebration = null; render(); }
+
 function renderBadgesCard(){
   return `
     <div class="data-card">
       <h3>Badges</h3>
-      <p>Bronze, Silver, and Gold unlock per area as your logged activities there add up — ${BADGE_TIERS.map(t=>`${t.name} at ${t.threshold}`).join(', ')}.</p>
+      <p><strong>Badges unlock automatically</strong> — nothing to set up. Bronze, Silver, and Gold unlock per area based on how many activities you've logged there, all-time — ${BADGE_TIERS.map(t=>`${t.name} at ${t.threshold}`).join(', ')}.</p>
       <div class="badge-grid">
         ${AREA_KEYS.map(a=>{
           const count = areaEntryCount(a);
@@ -1117,6 +1252,10 @@ function renderBadgesCard(){
 
 function renderDataView(){
   return `
+    <div class="data-card">
+      <h3>About N.E.W. Tracker</h3>
+      <p><strong>N.E.W.</strong> stands for <strong>Nature's Elegant Weapon</strong>. It's a personal life tracker — think habit tracker meets journal meets planner — built around the different sides of your life: Physical, Food, Adventure, Mental, Growth, and Social.</p>
+    </div>
     ${renderSettingsCard()}
     ${renderGoalsCard()}
     ${renderBadgesCard()}
@@ -1230,6 +1369,7 @@ function logEntry(dateOverride, tagsOverride, notesOverride, titleOverride, from
   state.entries.push(entry);
   if(!tagsOverride) state.logSelected = [];
   saveEntries();
+  checkForNewBadges();
   return entry;
 }
 function deleteEntry(ts){
@@ -1306,6 +1446,7 @@ function toggleDone(day, i){
     state.pendingEntry = { day, i, tags:[...item.tags], dateISO };
   }
   render();
+  if(goingDone) popAnimate(`[data-check-id="wk-${day}-${i}"]`);
 }
 function removePlanTag(day,itemIndex,tagIndex){
   const plan = state.plans[state.weekAnchor];
@@ -1571,6 +1712,7 @@ function importBackupFile(evt){
   loadEntries();
   loadTemplate();
   loadGoals();
+  loadSeenBadges();
   loadPlan(state.weekAnchor);
   try{ state.showOnboarding = localStorage.getItem(ONBOARDING_KEY) !== '1'; }
   catch(e){ state.showOnboarding = true; }
