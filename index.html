@@ -61,10 +61,9 @@
   .switch-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s ease;}
   .switch.on .switch-knob{left:18px;}
 
-  .trail-wrap{position:relative;height:80px;margin:14px -4px 0 -4px;}
-  .trail-svg{width:100%;height:100%;display:block;}
-  .stations{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:space-between;padding:0 6px;}
-  .station{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;padding-bottom:4px;background:none;border:none;}
+  .trail-wrap{margin:14px -4px 0 -4px;padding:0 6px;}
+  .stations{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 6px;}
+  .station{flex:0 0 21%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;cursor:pointer;padding:2px 0;background:none;border:none;}
   .station .dot{width:10px;height:10px;background:var(--slate-light);border:2px solid var(--navy-light);margin-bottom:5px;transition:all .2s ease;border-radius:2px;transform:rotate(45deg);}
   .station.active .dot{background:var(--amber);box-shadow:0 0 0 4px rgba(122,90,58,0.3);}
   .station label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.2px;color:var(--navy);cursor:pointer;white-space:nowrap;background:rgba(243,241,234,0.85);padding:2px 7px;border-radius:8px;}
@@ -238,6 +237,11 @@ const DEFAULT_AREAS = {
     Friends:['Hang Out','Call','Video Chat','Host','Visit'],
     Family:['Call','Visit','Family Dinner','Holiday','Check In'],
     Community:['Volunteer','Party/Event','Club/Group','Networking','Local Event']
+  }},
+  'Life Admin':{ color:'#6B7280', groups:{
+    Chores:['Laundry','Clean House','Dishes','Yard Work','Organize'],
+    Errands:['Groceries','Pharmacy','Post Office','Bank','Returns'],
+    Admin:['Pay Bills','Appointments','Paperwork','Car Maintenance','Taxes']
   }}
 };
 const AREA_LABELS = { Nutrition: 'Food/Nutrition' };
@@ -483,9 +487,6 @@ function topoSVG(){
   </svg>`;
 }
 
-function trailSVG(){
-  return `<svg class="trail-svg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg>`;
-}
 function tagPill(t, removable, onRemove){
   const color = state.areas[t.area].color;
   const textColor = textColorFor(color);
@@ -529,7 +530,6 @@ function render(){
         </div>
         ${state.view==='log' ? `
           <div class="trail-wrap">
-            ${trailSVG()}
             <div class="stations">
               ${AREA_KEYS.map(a=>`<button class="station ${a===state.logBrowseArea?'active':''}" onclick="setLogArea('${a}')"><div class="dot"></div><label>${areaLabel(a)}</label></button>`).join('')}
             </div>
