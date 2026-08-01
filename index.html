@@ -189,6 +189,7 @@
   .goal-ring-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
   .goal-ring-row:last-child{margin-bottom:0;}
   .goal-ring-wrap{width:60px;height:60px;flex:none;}
+  .goal-ring-wrap.small{width:26px;height:26px;}
   .goal-ring-svg{width:100%;height:100%;display:block;}
   .goal-ring-info{flex:1;min-width:0;}
   .goal-ring-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
@@ -771,9 +772,12 @@ function renderGoalsProgressCard(weekAnchor, title){
     if(goalsForArea.length===1) return renderSingleGoalRow(goalsForArea[0], weekAnchor);
     const expanded = state.expandedGoalAreas.has(a);
     const metCount = goalsForArea.filter(g=>goalProgress(g,weekAnchor)>=g.target).length;
+    const groupPct = Math.round((metCount/goalsForArea.length)*100);
+    const allMet = metCount===goalsForArea.length;
     return `
       <div class="goal-group">
         <button class="entry-title" onclick="toggleGoalAreaExpand('${a}')">
+          <span class="goal-ring-wrap small">${goalRingSVG(a, groupPct, allMet)}</span>
           <span class="chev">${expanded?'▾':'▸'}</span><span>${areaLabel(a)} <span class="goal-count">(${metCount}/${goalsForArea.length} met)</span></span>
         </button>
         ${expanded ? goalsForArea.map(g=>renderSingleGoalRow(g, weekAnchor)).join('') : ''}
