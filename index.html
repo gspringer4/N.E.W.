@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>N.E.W. Tracker</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="logo_png" type="image/png">
-<link rel="apple-touch-icon" href="logo_small.png" type="image/png">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="apple-touch-icon" href="logo_small.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="N.E.W.">
 <meta name="theme-color" content="#1B2633">
@@ -55,6 +55,12 @@
 
   .today-card .today-head-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
   .today-card .today-head-row h3{margin:0;}
+  .today-head-actions{display:flex;gap:6px;align-items:center;flex:none;}
+  .today-sleep-btn{padding:8px 10px;font-size:13px;white-space:nowrap;}
+
+  .star-row{display:flex;gap:6px;justify-content:center;margin-bottom:12px;}
+  .star{background:none;border:none;font-size:30px;color:var(--line);cursor:pointer;padding:0;line-height:1;}
+  .star.filled{color:#C9A227;}
   .today-item-title{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--text);}
 
   .celebration-card{text-align:center;}
@@ -307,6 +313,7 @@ let state = {
   expandedEntries: new Set(),
   expandedPlan: new Set(),
   editingPlanItem: null, editTagsSelected: [], editBrowseArea:'Physical', editBrowseGroup:'Strength',
+  editingItemDetails: null,
   editingEntryId: null,
   goals: [], goalArea:'Physical', goalGroup:null,
   pieDrilldown: null,
@@ -319,7 +326,9 @@ let state = {
   pieRange: 'all',
   seenBadges: new Set(),
   badgeCelebration: null,
-  expandedHistoryWeeks: new Set()
+  expandedHistoryWeeks: new Set(),
+  sleepModalOpen: false,
+  sleepQuality: 0
 };
 
 function emptyWeek(){ const w={}; DAYS.forEach(d=>w[d]=[]); return w; }
@@ -576,6 +585,7 @@ function render(){
       ${state.view==='home' ? renderHomeView() : state.view==='log' ? renderLogView() : state.view==='week' ? renderWeekView() : renderDataView()}
     </div>
     ${state.pendingEntry ? renderPendingModal() : ''}
+    ${state.sleepModalOpen ? renderSleepModal() : ''}
     ${state.showOnboarding ? renderOnboardingModal() : ''}
     ${state.badgeCelebration ? renderBadgeCelebration() : ''}
     <div class="toast" id="toast"></div>
@@ -1037,7 +1047,7 @@ function toggleTodayDone(i){
   if(goingDone) popAnimate(`[data-check-id="today-${i}"]`);
 }
 function renderTodayItemRow(item, i){
-  const title = planAutoTitle(item.tags);
+  const title = item.title || planAutoTitle(item.tags);
   return `
     <div class="plan-item ${item.done?'done':''}">
       <div class="check ${item.done?'done':''}" data-check-id="today-${i}" onclick="toggleTodayDone(${i})">${item.done?'<span class="check-mark">✓</span>':''}</div>
@@ -1059,7 +1069,10 @@ function renderTodayWidget(){
     <div class="data-card today-card">
       <div class="today-head-row">
         <h3>Today</h3>
-        <button class="log-btn small btn-compact" onclick="setView('log')">+ Log something</button>
+        <div class="today-head-actions">
+          <button class="ghost-btn today-sleep-btn" onclick="openSleepModal()">🌙 Sleep</button>
+          <button class="log-btn small btn-compact" onclick="setView('log')">+ Log something</button>
+        </div>
       </div>
       ${totalCount===0
         ? `<div class="empty">Nothing planned or logged yet today.</div>`
@@ -1071,12 +1084,33 @@ function renderTodayWidget(){
   `;
 }
 
+function computeSleepStats(){
+  const start = addDays(todayISO(), -6);
+  const entries = state.entries.filter(e=>typeof e.sleepHours==='number' && e.date>=start && e.date<=todayISO());
+  if(entries.length===0) return null;
+  const avgHours = entries.reduce((s,e)=>s+e.sleepHours,0) / entries.length;
+  const qualityEntries = entries.filter(e=>e.sleepQuality);
+  const avgQuality = qualityEntries.length ? qualityEntries.reduce((s,e)=>s+e.sleepQuality,0)/qualityEntries.length : null;
+  return { nights: entries.length, avgHours, avgQuality };
+}
+function renderSleepCard(){
+  const stats = computeSleepStats();
+  if(!stats) return '';
+  return `
+    <div class="data-card">
+      <h3>Sleep — last 7 nights</h3>
+      <p>${stats.nights} night${stats.nights===1?'':'s'} logged · avg ${stats.avgHours.toFixed(1)} hrs${stats.avgQuality?` · avg ${stats.avgQuality.toFixed(1)}★`:''}</p>
+    </div>
+  `;
+}
+
 function renderHomeView(){
   const counts = computeAreaCounts(state.pieRange);
   const activityCount = countActivitiesInRange(state.pieRange);
   const thisWeek = mondayOf(new Date());
   return `
     ${renderTodayWidget()}
+    ${renderSleepCard()}
     <div class="data-card">
       <h3>Where your effort goes</h3>
       <div class="filter-row">
@@ -1115,8 +1149,9 @@ function renderDayCard(day, idx, anchor, plan){
       ${list.length===0 ? `<div class="empty" style="padding:6px 0;">Nothing planned</div>` : list.map((item,i)=>{
         const key = day+'|'+i;
         const expanded = state.expandedPlan.has(key);
-        const title = planAutoTitle(item.tags);
+        const title = item.title || planAutoTitle(item.tags);
         const isEditing = state.editingPlanItem && state.editingPlanItem.day===day && state.editingPlanItem.i===i;
+        const isEditingDetails = state.editingItemDetails && state.editingItemDetails.day===day && state.editingItemDetails.i===i;
         return `
         <div class="plan-item ${item.done?'done':''}">
           ${state.weekMode==='plan' ? `<div class="check ${item.done?'done':''}" data-check-id="wk-${day}-${i}" onclick="toggleDone('${day}',${i})">${item.done?'<span class="check-mark">✓</span>':''}</div>` : ''}
@@ -1124,9 +1159,15 @@ function renderDayCard(day, idx, anchor, plan){
             <button class="entry-title" onclick="togglePlanExpand('${key}')">
               <span class="chev">${expanded?'▾':'▸'}</span><span>${escapeHtml(title)}</span>
             </button>
-            ${expanded ? (isEditing ? renderEditTagsPanel('closeEditPlanItem','commitEditPlanItem') : `
+            ${expanded ? (
+              isEditing ? renderEditTagsPanel('closeEditPlanItem','commitEditPlanItem') :
+              isEditingDetails ? renderItemDetailsForm(day, i, item) : `
+              ${item.notes ? `<div class="note">${escapeHtml(item.notes)}</div>` : ''}
               <div class="tagrow" style="margin-top:6px;">${item.tags.map((t,ti)=>tagPill(t,true,`${removeFn}('${day}',${i},${ti})`)).join('')}</div>
-              <button class="add-day-btn" style="margin-top:8px;" onclick="openEditPlanItem('${day}',${i})">Edit tags</button>
+              <div class="inline-form" style="margin-top:8px;margin-bottom:0;">
+                <button class="ghost-btn" style="flex:1;" onclick="openEditItemDetails('${day}',${i})">Edit details</button>
+                <button class="ghost-btn" style="flex:1;" onclick="openEditPlanItem('${day}',${i})">Edit tags</button>
+              </div>
             `) : ''}
           </div>
           <button class="del" onclick="${deleteFn}('${day}',${i})" aria-label="Remove item">×</button>
@@ -1144,6 +1185,35 @@ function renderDayCard(day, idx, anchor, plan){
       ` : `<button class="add-day-btn" onclick="openDayPicker('${day}')">+ Add plan item</button>`}
     </div>
   `;
+}
+
+function renderItemDetailsForm(day, i, item){
+  return `
+    <div class="picker-panel" style="margin-top:8px;">
+      <div class="section-label">Edit details</div>
+      <input type="text" id="itemTitleInput" class="text-input text-input-block" placeholder="e.g. Sunset Surf — leave blank to use tag names" value="${escapeHtml(item.title||'')}">
+      <textarea id="itemNotesInput" placeholder="Notes (optional)">${escapeHtml(item.notes||'')}</textarea>
+      <div class="picker-actions">
+        <button class="ghost-btn" onclick="closeEditItemDetails()">Cancel</button>
+        <button class="log-btn small" onclick="saveItemDetails('${day}',${i})">Save</button>
+      </div>
+    </div>
+  `;
+}
+function openEditItemDetails(day, i){ state.editingItemDetails = {day, i}; render(); }
+function closeEditItemDetails(){ state.editingItemDetails = null; render(); }
+function saveItemDetails(day, i){
+  const list = state.weekMode==='template' ? state.template[day] : state.plans[state.weekAnchor][day];
+  const item = list[i];
+  if(!item) return;
+  const title = document.getElementById('itemTitleInput').value.trim();
+  const notes = document.getElementById('itemNotesInput').value.trim();
+  item.title = title || null;
+  item.notes = notes || null;
+  if(state.weekMode==='template') saveTemplate(); else savePlan(state.weekAnchor);
+  state.editingItemDetails = null;
+  render();
+  showToast('Updated ✓');
 }
 
 function renderEditTagsPanel(closeFnName, commitFnName){
@@ -1179,6 +1249,46 @@ function renderLoggedActivity(e){
       <button class="del" onclick="deleteEntry(${e.timestamp})" aria-label="Delete entry">×</button>
     </div>
   `;
+}
+
+function renderSleepModal(){
+  return `
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <div class="section-label">Log Sleep</div>
+        <input type="number" id="sleepHoursInput" class="text-input text-input-block" placeholder="Hours slept (e.g. 7.5)" step="0.5" min="0" max="24">
+        <div class="star-row">
+          ${[1,2,3,4,5].map(n=>`<button class="star ${state.sleepQuality>=n?'filled':''}" onclick="setSleepQuality(${n})" aria-label="${n} stars">★</button>`).join('')}
+        </div>
+        <textarea id="sleepNotesInput" placeholder="Notes (optional)"></textarea>
+        <div class="picker-actions">
+          <button class="ghost-btn" onclick="closeSleepModal()">Cancel</button>
+          <button class="log-btn small" onclick="saveSleepEntry()">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function openSleepModal(){ state.sleepModalOpen = true; state.sleepQuality = 0; render(); }
+function closeSleepModal(){ state.sleepModalOpen = false; render(); }
+function setSleepQuality(n){ state.sleepQuality = (state.sleepQuality===n) ? 0 : n; render(); }
+function saveSleepEntry(){
+  const hoursInput = document.getElementById('sleepHoursInput');
+  const hours = parseFloat(hoursInput.value);
+  if(!hours || hours<=0){ showToast('Enter hours slept'); return; }
+  const notes = document.getElementById('sleepNotesInput').value.trim();
+  const quality = state.sleepQuality;
+  const title = quality>0 ? `${hours} hrs sleep · ${'★'.repeat(quality)}${'☆'.repeat(5-quality)}` : `${hours} hrs sleep`;
+  const tags = [{area:'Physical', group:'Recovery', category:'Sleep'}];
+  const entry = logEntry(todayISO(), tags, notes, title);
+  if(entry){
+    entry.sleepHours = hours;
+    entry.sleepQuality = quality>0 ? quality : null;
+    saveEntries();
+  }
+  state.sleepModalOpen = false;
+  render();
+  showToast('Sleep logged ✓');
 }
 
 function renderPendingModal(){
@@ -1519,10 +1629,11 @@ function shiftWeek(dir){
   state.weekAnchor = addDays(state.weekAnchor, dir*7);
   state.expandedPlan = new Set();
   state.editingPlanItem = null;
+  state.editingItemDetails = null;
   loadPlan(state.weekAnchor);
   render();
 }
-function setWeekMode(m){ state.weekMode=m; state.openDayPicker=null; state.expandedPlan = new Set(); state.editingPlanItem = null; render(); }
+function setWeekMode(m){ state.weekMode=m; state.openDayPicker=null; state.expandedPlan = new Set(); state.editingPlanItem = null; state.editingItemDetails = null; render(); }
 function togglePlanExpand(key){
   if(state.expandedPlan.has(key)) state.expandedPlan.delete(key);
   else state.expandedPlan.add(key);
@@ -1640,6 +1751,14 @@ function savePendingEntry(){
   const notes = document.getElementById('pendingNotes').value.trim();
   const title = document.getElementById('pendingTitle').value.trim();
   logEntry(p.dateISO, p.tags, notes, title, true);
+  if(title){
+    const weekAnchor = mondayOf(new Date(p.dateISO+'T00:00:00'));
+    const plan = state.plans[weekAnchor];
+    if(plan && plan[p.day] && plan[p.day][p.i]){
+      plan[p.day][p.i].title = title;
+      savePlan(weekAnchor);
+    }
+  }
   state.pendingEntry = null;
   render();
   showToast('Logged ✓');
