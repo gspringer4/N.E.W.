@@ -437,10 +437,10 @@ function saveGoals(){
 }
 function goalProgress(goal, weekAnchor){
   const start = weekAnchor, end = addDays(weekAnchor,6);
-  return state.entries.filter(e=> e.date>=start && e.date<=end && e.tags.some(t=>t.area===goal.area && (!goal.group || t.group===goal.group))).length;
+  return state.entries.filter(e=> e.date>=start && e.date<=end && !isSleepEntry(e) && e.tags.some(t=>t.area===goal.area && (!goal.group || t.group===goal.group))).length;
 }
 function areaEntryCount(area){
-  return state.entries.filter(e=>e.tags.some(t=>t.area===area)).length;
+  return state.entries.filter(e=>!isSleepEntry(e) && e.tags.some(t=>t.area===area)).length;
 }
 
 function loadSeenBadges(){
@@ -829,10 +829,11 @@ function pieRangeBounds(range){
 function pieRangeLabel(range){
   return { all:'across all time', week:'this week', '2weeks':'in the past 2 weeks', month:'in the past month' }[range] || 'across all time';
 }
+function isSleepEntry(e){ return typeof e.sleepHours === 'number'; }
 function entriesInRange(range){
   const bounds = pieRangeBounds(range);
-  if(!bounds) return state.entries;
-  return state.entries.filter(e=> e.date>=bounds.start && e.date<=bounds.end);
+  const base = bounds ? state.entries.filter(e=> e.date>=bounds.start && e.date<=bounds.end) : state.entries;
+  return base.filter(e=>!isSleepEntry(e));
 }
 function countActivitiesInRange(range, area){
   const entries = entriesInRange(range);
